@@ -6802,8 +6802,8 @@
             static renderPersonalBoard(containerEl, records) {
                 if (!containerEl) return;
                 // Flight records with ~10px vertical gap (2.2% at ~456px board height = 10.03px)
-                const rowTops = [25.6, 35.8, 46.0, 56.2, 66.4, 76.6];
-                const rowHeight = 8.0;
+                const rowTops = [20.9, 33.0, 45.2, 57.5, 69.7, 82.2];
+                const rowHeight = 8.8;
 
                 let rowsHtml = '';
                 for (let i = 0; i < 6; i++) {
@@ -6831,7 +6831,7 @@
                         }
 
                         rowsHtml += `
-                        <div class="pixel-board-row personal-row" style="position: absolute; left: 22.9%; width: 67.2%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 6px; box-sizing: border-box; overflow: hidden;">
+                        <div class="pixel-board-row personal-row" style="position: absolute; left: 23.0%; width: 64.5%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 6px; box-sizing: border-box; overflow: hidden;">
                             <div class="row-pilot-info" style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: left; line-height: 1.15; flex: 1; min-width: 0;">
                                 <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; min-height: 28px; height: auto;">
                                     <span style="font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 800; color: #38bdf8; letter-spacing: 0.05em; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px;">
@@ -6857,14 +6857,14 @@
                         </div>`;
                     } else {
                         rowsHtml += `
-                        <div class="pixel-board-row empty-slot" style="position: absolute; left: 22.9%; width: 67.2%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; opacity: 0.4;">
+                        <div class="pixel-board-row empty-slot" style="position: absolute; left: 23.0%; width: 64.5%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; opacity: 0.4;">
                             <span style="font-family: 'Orbitron', monospace; font-size: 11px; color: #64748b; letter-spacing: 0.1em;">--- NO TELEMETRY ---</span>
                         </div>`;
                     }
                 }
 
                 containerEl.innerHTML = `
-                <div style="position: relative; width: 100%; max-width: 494px; margin: 0 auto; aspect-ratio: 1145 / 1374;">
+                <div style="position: relative; width: 100%; max-width: 494px; margin: 0 auto; aspect-ratio: 1 / 1;">
                     <img src="assets/leaderboard/Pixel-Art Flight Records Board.png" alt="Flight Records" style="width: 100%; height: 100%; display: block; object-fit: fill; pointer-events: none;" />
                     <div style="position: absolute; inset: 0;">
                         ${rowsHtml}
