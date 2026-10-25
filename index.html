@@ -1462,16 +1462,16 @@
             justify-content: center;
             gap: 14px;
             width: 100%;
-            height: 120px;
+            height: 200px;
         }
 
         .badge-slot-center {
-            width: 96px;
-            height: 96px;
-            min-width: 80px;
-            min-height: 80px;
-            max-width: 96px;
-            max-height: 96px;
+            width: 192px;
+            height: 192px;
+            min-width: 160px;
+            min-height: 160px;
+            max-width: 192px;
+            max-height: 192px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1502,8 +1502,8 @@
         }
 
         .badge-img-center {
-            max-width: 84px;
-            max-height: 84px;
+            max-width: 168px;
+            max-height: 168px;
             object-fit: contain;
             image-rendering: pixelated;
             transition: filter 0.2s ease, opacity 0.2s ease;
@@ -1530,17 +1530,17 @@
             }
             .main-menu-badges-row {
                 gap: 8px !important;
-                height: 105px !important;
+                height: 168px !important;
             }
             .badge-slot-center {
-                width: 82px !important;
-                height: 82px !important;
-                max-width: 82px !important;
-                max-height: 82px !important;
+                width: 164px !important;
+                height: 164px !important;
+                max-width: 164px !important;
+                max-height: 164px !important;
             }
             .badge-img-center {
-                max-width: 72px !important;
-                max-height: 72px !important;
+                max-width: 144px !important;
+                max-height: 144px !important;
             }
             .badge-slot-right {
                 width: 72px !important;
@@ -1568,17 +1568,17 @@
             }
             .main-menu-badges-row {
                 gap: 6px !important;
-                height: 95px !important;
+                height: 148px !important;
             }
             .badge-slot-center {
-                width: 74px !important;
-                height: 74px !important;
-                max-width: 74px !important;
-                max-height: 74px !important;
+                width: 148px !important;
+                height: 148px !important;
+                max-width: 148px !important;
+                max-height: 148px !important;
             }
             .badge-img-center {
-                max-width: 64px !important;
-                max-height: 64px !important;
+                max-width: 128px !important;
+                max-height: 128px !important;
             }
             .badge-slot-right {
                 width: 64px !important;
@@ -1890,7 +1890,7 @@
             <!-- Native 9:16 Canvas Coordinates: 540x960 -->
             <canvas id="gameCanvas" width="540" height="960"></canvas>
 
-            <!-- Requirement 3: Top-Left HUD (Score, Health Blocks, Titan Armor & 40s Shield) -->
+            <!-- Requirement 3: Top-Left HUD (Score, Health Blocks, Titan Armor & 30s Shield) -->
             <div id="leftHUDContainer" class="left-hud-group">
                 <div class="hud-stat-line">
                     <span class="hud-stat-title">SCORE</span>
@@ -1904,7 +1904,7 @@
                         <div class="health-block-hp" id="hpBlock_1"></div>
                         <div class="health-block-hp" id="hpBlock_2"></div>
                         <div class="health-block-hp" id="hpBlock_3"></div>
-                        <div class="shield-indicator-block ready" id="shieldIndicatorBlock" title="AUTOMATIC SHIELD (40s RECHARGE)">
+                        <div class="shield-indicator-block ready" id="shieldIndicatorBlock" title="AUTOMATIC SHIELD (30s RECHARGE)">
                             <div class="shield-fill-bar" id="shieldFillBar" style="width: 100%;"></div>
                         </div>
                     </div>
@@ -4104,9 +4104,9 @@
                 this.invulnerableTimer = 0;
                 this.isMovingForward = false;
 
-                // Shared 40-second Automatic Shield (Authoritative per player aircraft)
+                // Shared 30-second Automatic Shield (Authoritative per player aircraft)
                 this.shieldReady = true;
-                this.shieldCooldownTimer = 40000; // Ready initially
+                this.shieldCooldownTimer = 30000; // Ready initially
                 this.shieldFlashTimer = 0;
 
                 // Health & Armor State
@@ -4361,7 +4361,7 @@
                 // 1. Process Automatic Shield First
                 if (this.shieldReady) {
                     this.shieldReady = false;
-                    this.shieldCooldownTimer = 0; // Immediate 40s recharge
+                    this.shieldCooldownTimer = 0; // Immediate 30s recharge
                     this.shieldFlashTimer = 350;
                     screenShake = 6;
                     ambientFlash = 0.2;
@@ -4496,11 +4496,11 @@
                 if (this.invulnerableTimer > 0) this.invulnerableTimer = Math.max(0, this.invulnerableTimer - dt);
                 if (this.shieldFlashTimer > 0) this.shieldFlashTimer = Math.max(0, this.shieldFlashTimer - dt);
 
-                // Shared 40-second Automatic Shield Recharge
+                // Shared 30-second Automatic Shield Recharge
                 if (!this.shieldReady && gameState === 'PLAYING' && !isPaused) {
                     this.shieldCooldownTimer += dt;
-                    if (this.shieldCooldownTimer >= 40000) {
-                        this.shieldCooldownTimer = 40000;
+                    if (this.shieldCooldownTimer >= 30000) {
+                        this.shieldCooldownTimer = 30000;
                         this.shieldReady = true;
                         triggerShieldReadySparkle(this.x, this.y);
                         updateLeftHUD();
@@ -5565,7 +5565,7 @@
             const curHp = Math.max(0, player.hp !== undefined ? player.hp : maxHp);
             const maxArmor = player.maxArmor || 0;
             const shieldReady = player.shieldReady;
-            const shieldProgress = Math.min(1.0, Math.max(0, (player.shieldCooldownTimer || 0) / 40000));
+            const shieldProgress = Math.min(1.0, Math.max(0, (player.shieldCooldownTimer || 0) / 30000));
 
             // Dynamic reconstruction of health + armor + shield row if structure changed
             const configKey = `${player.aircraftIndex}_${maxHp}_${maxArmor}`;
@@ -5604,11 +5604,11 @@
                     }
                 }
 
-                // 3. Separate Shield Block at end of row (Shared 40s Recharge)
+                // 3. Separate Shield Block at end of row (Shared 30s Recharge)
                 const shieldBlock = document.createElement('div');
                 shieldBlock.className = 'shield-indicator-block';
                 shieldBlock.id = 'shieldIndicatorBlock';
-                shieldBlock.title = 'SHARED AUTOMATIC SHIELD (40s RECHARGE)';
+                shieldBlock.title = 'SHARED AUTOMATIC SHIELD (30s RECHARGE)';
 
                 const fillBar = document.createElement('div');
                 fillBar.className = 'shield-fill-bar';
@@ -6760,8 +6760,8 @@
                         rowsHtml += `
                         <div class="pixel-board-row shared-row ${isYou ? 'current-player' : ''}" style="position: absolute; left: 24.0%; width: 67.2%; top: ${cfg.top}%; height: ${cfg.height}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 4px; box-sizing: border-box; overflow: hidden;">
                             <div class="row-pilot-info" style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: left; line-height: 1.15; flex: 1; min-width: 0;">
-                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; min-height: 28px; height: auto;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 13.5px; font-weight: 900; color: ${isYou ? '#38bdf8' : cfg.rankColor}; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px; line-height: 28px;">
+                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; height: auto;">
+                                    <span style="font-family: 'Orbitron', monospace; font-size: 13.5px; font-weight: 900; color: ${isYou ? '#38bdf8' : cfg.rankColor}; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px; line-height: 1.2;">
                                         ${nickname}
                                     </span>
                                     ${entry.hasHeldTop1 ? '<img class="player-top1-achievement-badge" src="assets/leaderboard/top1.png" alt="Top 1 Legend" title="Held Rank #1" style="width: 40px; height: 40px; max-width: 40px; max-height: 40px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.95)); flex-shrink: 0;" />' : ''}
@@ -6833,8 +6833,8 @@
                         rowsHtml += `
                         <div class="pixel-board-row personal-row" style="position: absolute; left: 23.0%; width: 64.5%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 6px; box-sizing: border-box; overflow: hidden;">
                             <div class="row-pilot-info" style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: left; line-height: 1.15; flex: 1; min-width: 0;">
-                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; min-height: 28px; height: auto;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 800; color: #38bdf8; letter-spacing: 0.05em; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px;">
+                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; height: auto;">
+                                    <span style="font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 800; color: #38bdf8; letter-spacing: 0.05em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px;">
                                         #${i + 1} ${dateStr}
                                     </span>
                                     ${(record.hasHeldTop1 || (typeof FlightLeaderboardAPI !== 'undefined' && FlightLeaderboardAPI.hasPlayerHeldTop1 && FlightLeaderboardAPI.hasPlayerHeldTop1())) ? '<img class="player-top1-achievement-badge" src="assets/leaderboard/top1.png" alt="Top 1 Legend" title="Held Rank #1" style="width: 40px; height: 40px; max-width: 40px; max-height: 40px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.95)); flex-shrink: 0;" />' : ''}
