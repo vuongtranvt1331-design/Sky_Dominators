@@ -2208,7 +2208,7 @@
                         RESUME COMBAT
                     </button>
                     <button id="pauseExitBtn" class="tactical-btn" style="min-height: 48px; padding: 12px 16px; font-size: 13px; font-weight: bold; border-radius: 4px; background: rgba(30, 41, 59, 0.8); border-color: #64748b;">
-                        MAIN MENU
+                        ⮌ MAIN MENU
                     </button>
                     <button id="pauseArcadeHubBtn" class="tactical-btn" style="min-height: 48px; padding: 12px 16px; font-size: 13px; font-weight: bold; border-radius: 4px; background: rgba(15, 23, 42, 0.9); border-color: #facc15; color: #facc15;">
                         ◀ ARCADE HUB
@@ -2291,13 +2291,13 @@
                     <!-- Upper Row: Relinquish / Menu + Hangar + Arcade Hub -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
                         <button id="detailedMainMenuBtn" class="tactical-btn" style="min-height: 48px; padding: 13px 4px; font-size: 11px; font-weight: 800; border-radius: 4px; background: rgba(30, 41, 59, 0.9); border-color: #64748b; color: #cbd5e1; font-family: 'Orbitron', sans-serif;">
-                            ⮌ MENU
+                            ⮌ MAIN MENU
                         </button>
                         <button id="detailedHangarBtn" class="tactical-btn" style="min-height: 48px; padding: 13px 4px; font-size: 11px; font-weight: 800; border-radius: 4px; background: rgba(8, 51, 68, 0.9); border-color: #38bdf8; color: #38bdf8; font-family: 'Orbitron', sans-serif;">
                             ✈ HANGAR
                         </button>
-                        <button id="detailedArcadeHubBtn" class="tactical-btn" style="min-height: 48px; padding: 13px 4px; font-size: 11px; font-weight: 800; border-radius: 4px; background: rgba(15, 23, 42, 0.9); border-color: #facc15; color: #facc15; font-family: 'Orbitron', sans-serif;">
-                            ◀ HUB
+                        <button id="detailedArcadeHubBtn" class="tactical-btn" style="min-height: 48px; padding: 13px 4px; font-size: 10px; font-weight: 800; border-radius: 4px; background: rgba(15, 23, 42, 0.9); border-color: #facc15; color: #facc15; font-family: 'Orbitron', sans-serif;">
+                            ◀ ARCADE HUB
                         </button>
                     </div>
                     <!-- Lower Row: Full-width Retry -->
@@ -7416,14 +7416,7 @@
 
         // Stage 2 Detailed Records Screen Navigation Buttons
         document.getElementById('detailedMainMenuBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            audio.init();
-            document.getElementById('detailedRecordsOverlay')?.classList.add('hidden');
-            document.getElementById('startOverlay')?.classList.remove('hidden');
-            gameState = 'START';
-            if (typeof resetMobileControls === 'function') resetMobileControls();
-            if (typeof updateMobileControlsVisibility === 'function') updateMobileControlsVisibility();
-            refreshMainMenuView();
+            returnToSkyMainMenu(e);
         });
 
         document.getElementById('detailedHangarBtn')?.addEventListener('click', (e) => {
@@ -7671,29 +7664,45 @@
             }
         });
 
-        // Requirement 3 & 5: Exit handler supporting returnUrl navigation back to Arcade Space
-        function handleExitNavigation(e) {
-            if (e) e.preventDefault();
-            const urlParams = new URLSearchParams(window.location.search);
-            const returnUrl = urlParams.get('returnUrl');
-            if (returnUrl) {
-                window.location.href = returnUrl;
-                return;
-            }
-            audio.init();
+        // =========================================================================
+        // SKY DOMINATORS MAIN MENU NAVIGATION
+        // Always returns strictly to Sky Dominators Start Screen (Never redirects to Hub)
+        // =========================================================================
+        function returnToSkyMainMenu(e) {
+            if (e && typeof e.preventDefault === 'function') e.preventDefault();
+            if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+            try {
+                if (typeof audio !== 'undefined' && audio && audio.init) audio.init();
+            } catch (err) {}
+
             gameState = 'START';
             if (typeof resetMobileControls === 'function') resetMobileControls();
             if (typeof updateMobileControlsVisibility === 'function') updateMobileControlsVisibility();
-            document.getElementById('startOverlay').classList.remove('hidden');
-            document.getElementById('gameOverOverlay').classList.add('hidden');
-            document.getElementById('detailedRecordsOverlay')?.classList.add('hidden');
-            document.getElementById('pauseOverlay').classList.add('hidden');
-            refreshMainMenuView();
-        }
 
-        document.getElementById('exitBtn')?.addEventListener('click', handleExitNavigation);
-        document.getElementById('pauseExitBtn')?.addEventListener('click', handleExitNavigation);
-        document.getElementById('gameOverExitBtn')?.addEventListener('click', handleExitNavigation);
+            // Strictly hide all gameplay and debrief overlays
+            document.getElementById('detailedRecordsOverlay')?.classList.add('hidden');
+            document.getElementById('gameOverOverlay')?.classList.add('hidden');
+            document.getElementById('pauseOverlay')?.classList.add('hidden');
+            document.getElementById('inGameHangarModal')?.classList.add('hidden');
+            document.getElementById('leaderboardModal')?.classList.add('hidden');
+
+            // Strictly reveal Sky Dominators Main Menu
+            const startOverlay = document.getElementById('startOverlay');
+            if (startOverlay) {
+                startOverlay.classList.remove('hidden');
+                startOverlay.scrollTop = 0;
+            }
+
+            if (typeof refreshMainMenuView === 'function') {
+                refreshMainMenuView();
+            }
+        }
+        window.returnToSkyMainMenu = returnToSkyMainMenu;
+        window.handleExitNavigation = returnToSkyMainMenu;
+
+        document.getElementById('exitBtn')?.addEventListener('click', returnToSkyMainMenu);
+        document.getElementById('pauseExitBtn')?.addEventListener('click', returnToSkyMainMenu);
+        document.getElementById('gameOverExitBtn')?.addEventListener('click', returnToSkyMainMenu);
 
         // =========================================================================
         // ARCADE HUB RETURN NAVIGATION
