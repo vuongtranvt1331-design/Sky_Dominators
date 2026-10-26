@@ -1,12 +1,10 @@
 {
-  "version": "2026-10-26-open-dashboard-1",
+  "version": "2026-10-26-ranked-firestore-1",
   "gameUrl": "https://vuongtranvt1331-design.github.io/Sky_Dominators/",
   "hubUrl": "https://vuongtranvt1331-design.github.io/Arcadehub/",
   "firebaseProject": "skydominators",
-  "functionsRegion": "us-central1",
-  "requiresFirebaseDeployment": true,
-  "temporaryAircraftTesting": true,
-  "teacherDashboard": "teacher.html",
-  "rankedTeacherTab": "teacher.html?tab=ranked",
-  "teacherLoginRequired": false
+  "rankedStorage": "direct-firestore",
+  "cloudFunctionsRequired": false,
+  "teacherDashboardIncluded": false,
+  "temporaryAircraftTesting": true
 }
