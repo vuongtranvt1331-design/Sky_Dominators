@@ -1,0 +1,62 @@
+{
+  "id": "skyborne",
+  "aircraft": "viper",
+  "price": 2000,
+  "flight": {
+    "file": "viper_skyborne_flight_12f.png",
+    "sheetSize": [
+      1024,
+      768
+    ],
+    "frameSize": [
+      256,
+      256
+    ],
+    "columns": 4,
+    "rows": 3,
+    "count": 12,
+    "frameMs": 80,
+    "origin": [
+      128,
+      128
+    ],
+    "head": [
+      128,
+      52
+    ],
+    "displaySize": 112,
+    "loop": true
+  },
+  "beam": {
+    "file": "viper_skyborne_laser_beam.png",
+    "size": [
+      43,
+      256
+    ],
+    "displaySize": [
+      6,
+      36
+    ]
+  },
+  "impact": {
+    "file": "viper_skyborne_laser_impact.png",
+    "frameSize": [
+      128,
+      128
+    ],
+    "columns": 2,
+    "count": 4,
+    "frameMs": 60
+  },
+  "flash": {
+    "file": "viper_skyborne_laser_flash.png",
+    "frameSize": [
+      64,
+      64
+    ],
+    "columns": 2,
+    "count": 4,
+    "frameMs": 30
+  },
+  "notes": "Original Skyborne, black hair, right arm extended and left bent. Cape included in body. Cosmetic only; Viper hitbox stays 70x68."
+}

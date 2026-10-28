@@ -1,16 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="sky-dominators-release" content="2026-10-26-ranked-firestore-1">
+    <meta name="sky-dominators-release" content="2026-10-28-round36-1">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>AIR STRIKE: CANYON PROTOCOL - Vocabulary Tactical Combat</title>
+    <title>Sky Dominators — Arcade Flight</title>
     <!-- Tailwind CSS CDN (with complete offline fallback styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK v10 Compat for Sky Dominators Cloud Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="ranked/core.js?v=2026-10-26-ranked-firestore-1"></script>
+    <script src="skins/red-wraith-config.js?v=2026-10-28-round36-1"></script>
+    <script src="skins/elder-wood-config.js?v=2026-10-28-round36-1"></script>
+    <script src="skins/catalog.js?v=2026-10-28-skyborne-1"></script>
+    <script src="skins/runtime.js?v=2026-10-28-skyborne-1"></script>
+    <script src="combat/sky-fortress.js?v=2026-10-28-round36-1"></script>
+    <script src="combat/bosses.js?v=2026-10-28-round36-1"></script>
+    <script src="progress/core.js?v=2026-10-28-round36-1"></script>
+    <script src="progress/firestore.js?v=2026-10-28-round36-1"></script>
+    <script src="progress/client.js?v=2026-10-28-round36-1"></script>
 
     <style>
         /* Import High-Tech Monospace and Tactical Fonts */
@@ -762,7 +770,6 @@
             color: #ffffff;
         }
 
-        /* Requirement 4: In-Game Aircraft Hangar Selection Interface (Expanded for Skins) */
         .hangar-modal-box {
             position: relative;
             background: rgba(15, 23, 42, 0.96);
@@ -887,18 +894,6 @@
             text-overflow: ellipsis;
         }
 
-        .hangar-active-skin-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 9.5px;
-            font-weight: 700;
-            color: #00F0FF;
-            letter-spacing: 0.06em;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
         .hangar-health-bar {
             display: flex;
             gap: 4px;
@@ -948,142 +943,6 @@
             left: 0;
             color: #38bdf8;
             font-weight: bold;
-        }
-
-        /* 2. Skin Selector Section (Immediately below Aircraft Preview) */
-        .hangar-skin-selector-section {
-            margin-top: 4px;
-            margin-bottom: 8px;
-            padding: 7px 8px;
-            background: rgba(8, 14, 26, 0.82);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 6px;
-        }
-
-        .hangar-skin-selector-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            padding-bottom: 3px;
-            border-bottom: 1px dashed rgba(100, 116, 139, 0.4);
-        }
-
-        .hangar-skin-selector-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 9px;
-            font-weight: 800;
-            color: #38bdf8;
-            letter-spacing: 0.08em;
-        }
-
-        .hangar-active-skin-badge {
-            font-family: 'Orbitron', monospace;
-            font-size: 8px;
-            font-weight: 800;
-            color: #00F0FF;
-            background: rgba(14, 165, 233, 0.25);
-            padding: 1px 5px;
-            border-radius: 3px;
-            border: 1px solid rgba(0, 240, 255, 0.5);
-            letter-spacing: 0.06em;
-        }
-
-        .hangar-skin-scroll-wrap {
-            display: flex;
-            gap: 7px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 4px 2px 6px 2px;
-            scrollbar-width: thin;
-            scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.8);
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .hangar-skin-scroll-wrap::-webkit-scrollbar {
-            height: 5px;
-        }
-
-        .hangar-skin-scroll-wrap::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 3px;
-        }
-
-        .hangar-skin-scroll-wrap::-webkit-scrollbar-thumb {
-            background: #0284c7;
-            border-radius: 3px;
-        }
-
-        .hangar-skin-card {
-            position: relative;
-            flex: 0 0 64px;
-            width: 64px;
-            height: 72px;
-            min-height: 48px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1.5px solid #334155;
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            padding: 3px 2px;
-            user-select: none;
-            cursor: pointer;
-            transition: all 0.14s ease;
-            touch-action: manipulation;
-        }
-
-        .hangar-skin-card:hover {
-            border-color: #38bdf8;
-            background: rgba(14, 165, 233, 0.18);
-            transform: translateY(-1px);
-        }
-
-        .hangar-skin-card.is-equipped {
-            border-color: #00F0FF;
-            background: rgba(14, 165, 233, 0.28);
-            box-shadow: 0 0 10px rgba(0, 240, 255, 0.65), inset 0 0 6px rgba(0, 240, 255, 0.3);
-        }
-
-        .hangar-skin-card.is-equipped::after {
-            content: "✓";
-            position: absolute;
-            top: 2px;
-            right: 3px;
-            font-size: 8.5px;
-            font-weight: 900;
-            color: #00F0FF;
-            text-shadow: 0 0 4px #00F0FF;
-        }
-
-        .hangar-skin-thumb-img {
-            width: 38px;
-            height: 42px;
-            object-fit: contain;
-            image-rendering: pixelated;
-            pointer-events: none;
-            filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
-        }
-
-        .hangar-skin-name-lbl {
-            font-family: 'Orbitron', monospace;
-            font-size: 7.5px;
-            font-weight: 700;
-            color: #cbd5e1;
-            text-align: center;
-            margin-top: 3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 58px;
-            width: 100%;
-        }
-
-        .hangar-skin-card.is-equipped .hangar-skin-name-lbl {
-            color: #00F0FF;
-            font-weight: 800;
         }
 
         /* Selector Strip: Aircraft Models (Removed arrows, expanded thumbnails to fill width) */
@@ -1170,19 +1029,6 @@
             filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.9));
         }
 
-        /* Player Record / Leaderboard 2X #1 Badge */
-        .player-top1-achievement-badge {
-            width: 40px !important;
-            height: 40px !important;
-            max-width: 40px !important;
-            max-height: 40px !important;
-            object-fit: contain !important;
-            filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.95)) !important;
-            flex-shrink: 0 !important;
-            display: inline-block !important;
-            vertical-align: middle !important;
-        }
-
         @media (max-width: 480px) {
             .hangar-preview-left {
                 flex: 0 0 115px;
@@ -1196,15 +1042,6 @@
             .hangar-modal-box {
                 padding: 8px 10px;
                 max-height: 94vh;
-            }
-            .hangar-skin-card {
-                flex: 0 0 58px;
-                width: 58px;
-                height: 66px;
-            }
-            .hangar-skin-thumb-img {
-                width: 34px;
-                height: 38px;
             }
         }
 
@@ -1415,217 +1252,6 @@
             margin-left: 6px;
         }
 
-        /* Main Menu Enlarged Player Identity Panel */
-        #mainMenuIdentitySection {
-            transition: all 0.2s ease;
-        }
-        #mainMenuMedalImg {
-            width: 132px;
-            height: 152px;
-            max-width: 136px;
-            max-height: 152px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 14px rgba(250, 204, 21, 0.75));
-            image-rendering: pixelated;
-        }
-
-        /* 8-Bit Restrained Data-Glitch Animation for Locked Sky Legend */
-        @keyframes skyLegendLockedGlitch {
-            0%, 84%, 100% {
-                transform: translate(0, 0);
-                filter: grayscale(85%) opacity(0.20);
-            }
-            86% {
-                transform: translate(-2px, 1px);
-                filter: grayscale(75%) opacity(0.26) drop-shadow(1px 0 0 #00F0FF);
-            }
-            88% {
-                transform: translate(2px, -1px);
-                filter: grayscale(75%) opacity(0.22) drop-shadow(-1px 0 0 #ef4444);
-            }
-            90% {
-                transform: translate(0, 0);
-                filter: grayscale(85%) opacity(0.20);
-            }
-            92% {
-                transform: translate(1px, 1px);
-                filter: grayscale(80%) opacity(0.25);
-            }
-            94% {
-                transform: translate(0, 0);
-                filter: grayscale(85%) opacity(0.20);
-            }
-        }
-
-        .sky-legend-locked-glitch {
-            animation: skyLegendLockedGlitch 3.2s infinite steps(2, jump-none) !important;
-            pointer-events: none;
-            opacity: 0.20 !important;
-            filter: grayscale(85%) !important;
-        }
-
-        /* Stop glitch animation when main menu / modal is hidden to avoid CPU usage */
-        .modal-overlay.hidden .sky-legend-locked-glitch {
-            animation: none !important;
-        }
-
-        /* Repurposed Badge Display Zone (Maximized Badge Dimensions) */
-        .main-menu-badge-zone {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            padding: 0 4px;
-            box-sizing: border-box;
-            min-width: 0;
-        }
-
-        .main-menu-badges-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            width: 100%;
-            height: 120px;
-        }
-
-        .badge-slot-center {
-            width: 96px;
-            height: 96px;
-            min-width: 80px;
-            min-height: 80px;
-            max-width: 96px;
-            max-height: 96px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent !important;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .badge-slot-right {
-            width: 84px;
-            height: 84px;
-            min-width: 72px;
-            min-height: 72px;
-            max-width: 84px;
-            max-height: 84px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent !important;
-            border: none !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-            box-sizing: border-box;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .row-badge-box, .row-medal-box, .identity-medal-col {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        .badge-img-center {
-            max-width: 84px;
-            max-height: 84px;
-            object-fit: contain;
-            image-rendering: pixelated;
-            transition: filter 0.2s ease, opacity 0.2s ease;
-        }
-
-        .badge-img-right {
-            max-width: 74px;
-            max-height: 74px;
-            object-fit: contain;
-            image-rendering: pixelated;
-            transition: filter 0.2s ease, opacity 0.2s ease;
-        }
-
-        /* Responsive Mobile Scaling for Badges & Identity */
-        @media (max-width: 440px) {
-            .identity-medal-col {
-                width: 110px !important;
-            }
-            #mainMenuMedalImg {
-                width: 105px !important;
-                height: 121px !important;
-                max-width: 110px !important;
-                max-height: 125px !important;
-            }
-            .main-menu-badges-row {
-                gap: 8px !important;
-                height: 105px !important;
-            }
-            .badge-slot-center {
-                width: 82px !important;
-                height: 82px !important;
-                max-width: 82px !important;
-                max-height: 82px !important;
-            }
-            .badge-img-center {
-                max-width: 72px !important;
-                max-height: 72px !important;
-            }
-            .badge-slot-right {
-                width: 72px !important;
-                height: 72px !important;
-                max-width: 72px !important;
-                max-height: 72px !important;
-            }
-            .badge-img-right {
-                max-width: 62px !important;
-                max-height: 62px !important;
-            }
-        }
-        @media (max-width: 380px) {
-            #mainMenuIdentitySection {
-                padding: 12px 6px !important;
-            }
-            .identity-medal-col {
-                width: 95px !important;
-            }
-            #mainMenuMedalImg {
-                width: 90px !important;
-                height: 104px !important;
-                max-width: 95px !important;
-                max-height: 108px !important;
-            }
-            .main-menu-badges-row {
-                gap: 6px !important;
-                height: 95px !important;
-            }
-            .badge-slot-center {
-                width: 74px !important;
-                height: 74px !important;
-                max-width: 74px !important;
-                max-height: 74px !important;
-            }
-            .badge-img-center {
-                max-width: 64px !important;
-                max-height: 64px !important;
-            }
-            .badge-slot-right {
-                width: 64px !important;
-                height: 64px !important;
-                max-width: 64px !important;
-                max-height: 64px !important;
-            }
-            .badge-img-right {
-                max-width: 54px !important;
-                max-height: 54px !important;
-            }
-        }
-
         /* =========================================================================
            SKY DOMINATORS: MAIN MENU & DETAILED RECORDS BOARD STYLES
            ========================================================================= */
@@ -1816,69 +1442,6 @@
         }
 
 
-        /* Balanced artwork-only awards: equal side tracks keep the Legend centered. */
-        #mainMenuIdentitySection {
-            width: 100%; max-width: 494px; margin: 0 auto 12px;
-            display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
-            gap: clamp(4px, 1.5vw, 10px); align-items: center;
-            padding: 0 !important; flex-shrink: 0; container-type: inline-size;
-        }
-        #mainMenuIdentitySection .award-collection {
-            display: flex; align-items: center; justify-content: center; min-width: 0;
-        }
-        #mainMenuIdentitySection .menu-medal {
-            display: block; width: min(100%, 76px); height: clamp(42px, 18cqw, 76px);
-            object-fit: contain; image-rendering: pixelated;
-        }
-        #mainMenuIdentitySection .menu-secondary-badge {
-            display: block; width: min(100%, 76px); height: clamp(42px, 18cqw, 76px);
-            object-fit: contain; image-rendering: pixelated;
-        }
-        #mainMenuIdentitySection #badgeSlotCenter {
-            display: flex; align-items: center; justify-content: center;
-            width: 100%; min-width: 0; padding: 0;
-        }
-        #mainMenuIdentitySection #badgeImgCenter {
-            display: block; width: 100%; max-width: 147px; height: auto;
-            object-fit: contain; image-rendering: pixelated;
-            filter: drop-shadow(0 0 4px rgba(250, 204, 21, .35));
-        }
-        .records-art-board { container-type: inline-size; }
-        .records-art-board .pixel-board-row:not(.empty-slot) {
-            display: grid !important; grid-template-columns: minmax(0, 1fr) 36%; grid-template-rows: minmax(0, 1fr);
-            gap: 1cqw; padding: 0 1cqw !important; align-items: center;
-        }
-        .records-art-board .row-pilot-info { width: 100%; min-width: 0; }
-        .records-art-board .row-name-box { display: block !important; min-height: 0 !important; height: auto !important; }
-        .records-art-board .row-name-box > span {
-            display: block; width: 100%; max-width: none !important;
-            font-size: clamp(7px, 2.7cqw, 13.5px) !important; line-height: 1.2 !important;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .records-art-board .row-pilot-info > div:last-child {
-            gap: 1cqw !important; margin-top: 0 !important; white-space: nowrap;
-        }
-        .records-art-board .row-pilot-info > div:last-child span {
-            font-size: clamp(6px, 2.4cqw, 12px) !important; line-height: 1.2;
-        }
-        .records-art-board .row-media-group {
-            display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr);
-            gap: 1px !important; margin: 0 !important; width: 100%; height: 100%; min-width: 0;
-            position: relative;
-        }
-        .records-art-board .row-media-group > div {
-            display: flex; align-items: center; justify-content: center;
-            width: 100% !important; height: 100% !important; min-width: 0; min-height: 0;
-        }
-        .records-art-board .row-media-group img {
-            width: 100% !important; height: 100% !important;
-            max-width: 36px !important; max-height: 36px !important; object-fit: contain;
-        }
-        .records-art-board .row-current-label {
-            position: absolute; right: 0; bottom: 0; font-size: clamp(5px, 1.7cqw, 8px);
-            line-height: 1; background: #0284c7; color: white; padding: 1px 2px; border-radius: 2px;
-        }
-
         /* Hangar override is scoped to this modal; menu and record boards are unchanged. */
         #inGameHangarModal { position: fixed; inset: 0; z-index: 50; padding: 12px; }
         #inGameHangarModal .hangar-modal-box { width: 100%; max-width: 900px; max-height: 100%; padding: 16px; touch-action: pan-y; }
@@ -1890,7 +1453,6 @@
         #inGameHangarModal .hangar-desc-list { font-size: 12px; line-height: 1.45; }
         #inGameHangarModal .hangar-stat-line { display: flex; gap: 16px; align-items: center; font-size: 12px; margin-bottom: 5px; }
         #inGameHangarModal .hangar-health-bar { margin: 0; }
-        #inGameHangarModal .hangar-active-skin-title { margin: 6px 0 0; white-space: normal; }
         #inGameHangarModal #hangarConfirmBtn { grid-column: 1 / -1; min-height: 44px; padding: 10px; border-radius: 6px; font-size: 14px; }
         #inGameHangarModal #hangarConfirmBtn:disabled { background: #475569; color: #cbd5e1; border-color: #64748b; box-shadow: none; text-shadow: none; cursor: not-allowed; transform: none; }
         #inGameHangarModal .hangar-collections { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -1902,13 +1464,6 @@
         #inGameHangarModal .hangar-thumb-img { width: 52px; height: 52px; opacity: 1 !important; filter: none !important; }
         #inGameHangarModal .hangar-card-name { display: block; font-size: 13px; font-weight: 800; }
         #inGameHangarModal .hangar-card-status { display: block; font-size: 11px; color: #94a3b8; margin-top: 3px; }
-        #inGameHangarModal .hangar-skin-selector-section { margin: 0; padding: 8px; min-width: 0; }
-        #inGameHangarModal #hangarSkinThumbnails { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; overflow: visible; }
-        #inGameHangarModal .hangar-skin-card { width: 100%; min-width: 0; height: auto; min-height: 86px; padding: 6px; color: #cbd5e1; }
-        #inGameHangarModal .hangar-skin-name-lbl { max-width: 100%; white-space: normal; font-size: 9px; }
-        #inGameHangarModal .skin-placeholder { position: relative; display: grid; place-items: center; width: 100%; height: 86px; padding: 8px; background: #64748b; border: 1px solid #94a3b8; border-radius: 5px; opacity: 1; pointer-events: none; }
-        #inGameHangarModal .skin-placeholder img { width: 100%; height: 62px; object-fit: contain; filter: brightness(0); }
-        #inGameHangarModal .skin-placeholder svg { position: absolute; width: 22px; height: 22px; right: 4px; bottom: 4px; color: #ff3030; filter: drop-shadow(0 1px 1px #000); }
         @media (max-width: 600px) {
             #inGameHangarModal { padding: 8px; }
             #inGameHangarModal .hangar-modal-box { padding: 12px; }
@@ -1921,12 +1476,9 @@
             .crosshair-preview { position: relative; display: inline-grid; place-items: center; min-width: 0; max-width: 100%; vertical-align: middle; }
         .crosshair-preview > canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; image-rendering: pixelated; }
         #inGameHangarModal .hangar-selected-info > .crosshair-preview { width: 100%; }
-            .hangar-skin-card.skin-locked { position: relative; }
-        .hangar-skin-card.skin-locked::before { content: '🔒'; position: absolute; top: 2px; right: 3px; font-size: 13px; }
-        .hangar-skin-card.is-inspected { outline: 2px solid #fbbf24; outline-offset: -2px; }
         #startBtn:disabled { cursor: default; }
     </style>
-    <link rel="stylesheet" href="ranked/ranked.css?v=2026-10-26-ranked-firestore-1">
+    <link rel="stylesheet" href="progress/ui.css?v=2026-10-28-skin-feedback-2">
 </head>
 <body>
 
@@ -2017,7 +1569,7 @@
                             <p id="aircraftLockNotice" hidden role="status" style="font-family:Arial,sans-serif;color:#fbbf24;font-size:15px"></p><p id="hangarUnlockStatus" role="status"></p>
                             <div class="hangar-stat-line"><span id="hangarHealthBar" class="hangar-health-bar"></span><span>Damage <strong id="hangarDamageNumber">1</strong></span></div>
                             <ul id="hangarDescList" class="hangar-desc-list"></ul>
-                            <p id="hangarActiveSkinName" class="hangar-active-skin-title"></p>
+                            
                         </div>
                         <button id="hangarConfirmBtn" class="tactical-btn" type="button">CONFIRM AIRCRAFT SELECTION</button>
                     </section>
@@ -2026,13 +1578,14 @@
                             <h3 id="hangarAircraftHeading">AIRCRAFT</h3>
                             <div id="hangarThumbnailList" class="hangar-thumbnail-row"></div>
                         </section>
-                        <section class="hangar-skin-selector-section" aria-labelledby="hangarSkinHeading">
-                            <div class="hangar-skin-selector-header">
-                                <h3 id="hangarSkinHeading">SKINS (<span id="hangarSkinCount">0</span>)</h3>
-                                <span id="hangarActiveSkinLabel" class="hangar-active-skin-badge"></span>
-                            </div>
-                            <div id="hangarSkinThumbnails" class="hangar-skin-scroll-wrap"></div>
+                        <section class="hangar-skins-section" aria-labelledby="skinHeading">
+                            <h3 id="skinHeading">SKIN COLLECTION</h3>
+                            <p class="skin-help">Unlock skins for the selected aircraft. Previewing is free.</p>
+                            <div id="skinCards" class="skin-cards"></div>
+                            <p id="skinStatus" role="status" aria-live="polite"></p>
+                            <button id="skinAction" class="tactical-btn" type="button">EQUIPPED</button>
                         </section>
+                        
                     </div>
                 </div>
             </div>
@@ -2054,7 +1607,7 @@
                     <!-- Player Nickname / Callsign Input -->
                     <div class="leaderboard-player-strip">
                         <span class="player-callsign-label">CALLSIGN:</span>
-                        <input type="text" id="leaderboardCallsignInput" class="callsign-input" maxlength="12" value="PILOT-01" placeholder="CALLSIGN" style="min-height: 44px; font-size: 13px;" />
+                        <input type="text" id="leaderboardCallsignInput" class="callsign-input" maxlength="80" value="PILOT-01" placeholder="CALLSIGN" style="min-height: 44px; font-size: 13px;" />
                         <button id="saveCallsignBtn" class="tactical-btn" style="min-height: 44px; padding: 0 16px; font-size: 12px; font-weight: 700; border-radius: 4px;">SET</button>
                     </div>
 
@@ -2115,13 +1668,10 @@
                 </div>
 
                 <!-- Flight medals, verified Legend, and secondary badges use separate artwork groups. -->
-                <div id="mainMenuIdentitySection" aria-label="Player awards">
-                    <div id="mainMenuMedals" class="award-collection" aria-label="Medals"></div>
-                    <div id="badgeSlotCenter">
-                        <img id="badgeImgCenter" class="sky-legend-locked-glitch" src="assets/leaderboard/top1.png" alt="Sky Legend" />
-                    </div>
-                    <div id="mainMenuSecondaryBadges" class="award-collection" aria-label="Current competitive rank"></div>
-                </div>
+                <section class="progress-summary" aria-label="Pilot progress">
+<div id="pilotRank"><img class="progress-rank-icon" src="assets/rank-progress/rank_iron_1.png" width="256" height="256" alt="Rookie"><span>Rookie</span></div>
+<div id="pilotCoins">0 Coins</div><p id="pilotProgress"></p></section>
+
 
                 <!-- 3. Prominent TAKE OFF Button (With Integrated Player Callsign) -->
                 <button id="startBtn" class="tactical-btn take-off-btn" type="button" aria-label="Take Off and Start Flight" style="width: 100%; max-width: 440px; min-height: 68px; padding: 10px 16px; border-radius: 8px; background: linear-gradient(180deg, #ef4444 0%, #dc2626 45%, #991b1b 100%); border: 2px solid #fca5a5; color: #ffffff; text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 18px #dc2626; box-shadow: 0 0 25px rgba(239, 68, 68, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -2px 6px rgba(0, 0, 0, 0.4); cursor: pointer; margin-bottom: 14px; font-family: 'Orbitron', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; box-sizing: border-box;">
@@ -2138,7 +1688,8 @@
                     </div>
                 </button>
 
-                <button id="chooseDefaultSkinBtn" type="button" hidden style="margin:0 0 12px;padding:8px;color:#e2e8f0;background:#142238;border:1px solid #64748b">Choose default skin</button>
+                
+                <details class="progress-links"><summary>PLAYER INFO</summary><div id="profileDetails"></div></details>
                 <!-- 4. Shared Leaderboard (Top 6 Players on Sky Dominators Pixel Leaderboard.png - Enlarged 30%, Zero Gap) -->
                 <div style="width: 100%; max-width: 494px; margin-bottom: 0px;">
                     <div id="mainMenuLeaderboardContainer"></div>
@@ -2149,7 +1700,10 @@
                     <div id="mainMenuPersonalRecordsContainer"></div>
                 </div>
 
-                <!-- 6. Compact Tactical Combat Protocols Briefing Card -->
+                <div id="profileSync" class="progress-status" role="status"></div>
+<a id="retryProgress" class="progress-retry" href="#">Refresh saved progress</a>
+<details class="progress-links" id="legacyLocalRecords" hidden><summary>Earlier records on this device</summary><p>These older records do not identify a pilot. They remain on this device and are not assigned to another student.</p><ul></ul></details>
+<!-- 6. Compact Tactical Combat Protocols Briefing Card -->
                 <div style="position: relative; background: rgba(15, 23, 42, 0.94); border: 1px solid rgba(185, 28, 28, 0.8); border-radius: 6px; padding: 10px 12px; margin-bottom: 20px; text-align: left; font-size: 10.5px; color: #cbd5e1; width: 100%; max-width: 380px; box-shadow: 0 0 20px rgba(220, 38, 38, 0.2); box-sizing: border-box;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(153, 27, 27, 0.5);">
                         <span style="color: #facc15; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; font-size: 9.5px; font-family: 'Orbitron', sans-serif;">🎯 COMBAT PROTOCOLS</span>
@@ -2166,7 +1720,7 @@
                         <div>
                             <span style="color: #38bdf8; font-weight: bold; display: block;">STEERING</span>
                             <span>• Arrow / WASD</span><br>
-                            <span>• Touch Drag</span>
+                            <span>• Tap destination</span>
                         </div>
                         <div>
                             <span style="color: #38bdf8; font-weight: bold; display: block;">FIRING</span>
@@ -2176,14 +1730,12 @@
                         <div>
                             <span style="color: #38bdf8; font-weight: bold; display: block;">TACTICAL JET</span>
                             <span>• Select in Hangar</span><br>
-                            <span>• 5 Special Classes</span>
+                            <span>• 9 Aircraft</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Backwards-compatibility triggers -->
-                <button id="startHangarBtn" style="display: none;"></button>
-                <button id="startLeaderboardBtn" style="display: none;"></button>
+
             </div>
 
             <!-- Pause Modal (Hangar strictly blocked during active flight) -->
@@ -2243,20 +1795,13 @@
                         <span id="finalTargetsText" style="color: #38bdf8; font-weight: bold; font-family: 'Orbitron', monospace;">0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px;">
-                        <span style="color: #94a3b8;">SORTIES (>10K PTS):</span>
+                        <span style="color: #94a3b8;">QUALIFYING FLIGHTS:</span>
                         <span id="finalSortiesCountText" style="color: #facc15; font-weight: bold; font-family: 'Orbitron', monospace;">0</span>
                     </div>
                     <span id="finalIntervalText" style="display: none;">7.00s</span>
 
                     <!-- Newly Earned Rewards Showcase Section -->
-                    <div id="gameOverRewardsBox" style="margin-top: 10px; padding: 4px 2px; background: transparent; border: none; box-shadow: none; display: flex; align-items: center; gap: 10px; text-align: left;">
-                        <img id="gameOverRewardMedalImg" src="assets/leaderboard/Weathered Novice Pilot Medal.png" alt="Medal" style="width: 38px; height: 44px; object-fit: contain; filter: drop-shadow(0 0 6px #facc15); flex-shrink: 0;" />
-                        <div style="text-align: left; flex: 1;">
-                            <span id="gameOverRewardHeader" style="font-size: 8px; font-weight: 800; color: #38bdf8; letter-spacing: 0.1em; display: block; font-family: 'Orbitron', monospace;">PILOT FLIGHT MEDAL</span>
-                            <span id="gameOverRewardTitle" style="font-size: 11px; font-weight: 800; color: #facc15; font-family: 'Orbitron', sans-serif;">NOVICE PILOT</span>
-                            <span id="gameOverRewardDesc" style="font-size: 8px; color: #cbd5e1; display: block; line-height: 1.2;">10 flights + 10k score unlocks next rank</span>
-                        </div>
-                    </div>
+                    <div id="gameOverRewardsBox"><div id="flightRank"></div><p id="flightCoins"></p><p id="flightSaveStatus" role="status"></p></div>
                 </div>
 
                 <!-- Pulsing Tap-To-Continue prompt (STRICTLY NO BUTTONS on Stage 1!) -->
@@ -2265,6 +1810,7 @@
                 </div>
             </div>
 
+            <section id="postFlightPromotion" aria-live="polite" hidden></section>
             <!-- Stage 2: Detailed Best Records Screen (BOARDS ONLY + ACTION BUTTONS) -->
             <div id="detailedRecordsOverlay" class="modal-overlay hidden">
                 <!-- Upper Section: Reusable Shared Leaderboard (Top 6 - Enlarged 30%, Zero Gap) -->
@@ -2320,6 +1866,8 @@
         const ctx = canvas.getContext('2d');
 
         // Requirement 1: Portrait 9:16 Aspect Ratio Playable Area (540 x 960)
+        let bossEncounter = null;
+        let attackSerial = 0;
         const GAME_WIDTH = 540;
         const GAME_HEIGHT = 960;
 
@@ -2421,20 +1969,6 @@
             assets.new_model = p1;
             assets.player = p1;
 
-            // Preload all supplied aircraft skin images
-            assets.skinImages = {};
-            if (typeof AIRCRAFT_SKINS_REGISTRY !== 'undefined') {
-                for (const classKey in AIRCRAFT_SKINS_REGISTRY) {
-                    for (const skin of AIRCRAFT_SKINS_REGISTRY[classKey]) {
-                        if (!skin.isDefault) {
-                            const sImg = new Image();
-                            sImg.src = skin.file;
-                            assets.skinImages[skin.id] = sImg;
-                        }
-                    }
-                }
-            }
-
             // Load thrust flame assets for all 5 models
             const flameOrder = [1, 2, 3, 5, 4];
             for (let i = 0; i < 5; i++) {
@@ -2522,6 +2056,11 @@
             }
 
             init() {
+                if (!this.ghidorahRoar) {
+                    this.ghidorahRoar = new Audio('assets/audio/king-ghidorah-roar-1.mp3');
+                    this.ghidorahRoar.preload = 'auto';
+                    this.ghidorahRoar.volume = 0.8;
+                }
                 if (!this.ctx) {
                     const AudioCtx = window.AudioContext || window.webkitAudioContext;
                     if (AudioCtx) {
@@ -2542,6 +2081,17 @@
                 for (let i = 0; i < bufferSize; i++) {
                     data[i] = Math.random() * 2 - 1;
                 }
+            }
+
+            playGhidorahRoar() {
+                if (this.muted) return false;
+                this.init();
+                if (!this.ghidorahRoar) return false;
+                this.ghidorahRoar.pause();
+                this.ghidorahRoar.currentTime = 0;
+                const playing = this.ghidorahRoar.play();
+                if (playing && playing.catch) playing.catch(() => {});
+                return true;
             }
 
             playShoot() {
@@ -3037,7 +2587,7 @@
                 }
 
                 if (!chosen) {
-                    for (const item of (window.Ranked?.mode === 'ranked' ? this.vocabularyList : BUILTIN_IELTS_VOCABULARY)) {
+                    for (const item of BUILTIN_IELTS_VOCABULARY) {
                         if (this.isValidVocabEntry(item) && !excludeSet.has(this.normalize(item.word))) {
                             chosen = item;
                             break;
@@ -3046,7 +2596,7 @@
                 }
 
                 if (!chosen) {
-                    chosen = (window.Ranked?.mode === 'ranked' ? this.vocabularyList : BUILTIN_IELTS_VOCABULARY)[0];
+                    chosen = BUILTIN_IELTS_VOCABULARY[0];
                 }
 
                 this.playedHistory.push(chosen.word);
@@ -3098,6 +2648,7 @@
         // =========================================================================
         let lastDangerTargetWord = "";
         function updateDangerHUDDisplay() {
+            if (bossEncounter?.blocksRegular) return;
             const dangerTargetElem = document.getElementById('dangerTargetWordText');
             const dangerDisplayElem = document.getElementById('dangerTargetDisplay');
             const dangerMeaningElem = document.getElementById('dangerMeaningText');
@@ -3479,7 +3030,7 @@
                     const normWord = vocabEntryOrWord.trim().toLowerCase();
                     entry = vocabService.vocabularyList.find(v => v.word.trim().toLowerCase() === normWord);
                     if (!entry) {
-                        entry = (window.Ranked?.mode === 'ranked' ? vocabService.vocabularyList : BUILTIN_IELTS_VOCABULARY).find(v => v.word.trim().toLowerCase() === normWord);
+                        entry = BUILTIN_IELTS_VOCABULARY.find(v => v.word.trim().toLowerCase() === normWord);
                     }
                     if (!entry && Array.isArray(validSynonyms) && validSynonyms.length > 0) {
                         entry = {
@@ -3505,7 +3056,7 @@
                 // Genuine, contextually appropriate synonym selection preserving meaning
                 this.correctSynonym = this.validSynonyms.length > 0
                     ? this.validSynonyms[Math.floor(Math.random() * this.validSynonyms.length)]
-                    : (window.Ranked?.mode === 'ranked' ? vocabService.vocabularyList : BUILTIN_IELTS_VOCABULARY)[0].synonyms[0];
+                    : BUILTIN_IELTS_VOCABULARY[0].synonyms[0];
 
                 this.initAircraft();
             }
@@ -3525,7 +3076,7 @@
                 const candidatePool = [];
                 const allItems = (vocabService.vocabularyList && vocabService.vocabularyList.length > 0)
                     ? vocabService.vocabularyList
-                    : (window.Ranked?.mode === 'ranked' ? vocabService.vocabularyList : BUILTIN_IELTS_VOCABULARY);
+                    : BUILTIN_IELTS_VOCABULARY;
 
                 for (const item of allItems) {
                     if (!item || !item.word) continue;
@@ -3573,7 +3124,7 @@
                         }
                         if (!chosenDistractor) {
                             // Robust secondary search across built-in baseline dataset
-                            for (const fallback of (window.Ranked?.mode === 'ranked' ? vocabService.vocabularyList : BUILTIN_IELTS_VOCABULARY)) {
+                            for (const fallback of BUILTIN_IELTS_VOCABULARY) {
                                 const fbWordNorm = fallback.word.trim().toLowerCase();
                                 if (forbidden.has(fbWordNorm)) continue;
                                 const fbSynsNorm = fallback.synonyms.map(s => s.trim().toLowerCase());
@@ -3592,7 +3143,7 @@
                         }
                         if (!chosenDistractor) {
                             // Fallback to distinct headwords if all synonyms in pool are exhausted
-                            for (const fallback of (window.Ranked?.mode === 'ranked' ? vocabService.vocabularyList : BUILTIN_IELTS_VOCABULARY)) {
+                            for (const fallback of BUILTIN_IELTS_VOCABULARY) {
                                 const fbWordNorm = fallback.word.trim().toLowerCase();
                                 if (!forbidden.has(fbWordNorm) && !usedWords.has(fbWordNorm)) {
                                     chosenDistractor = fallback.word.trim();
@@ -3726,6 +3277,13 @@
                 this.active = true;
                 this.isSpecial = !!isSpecial;
                 this.skillGeneration = this.isSpecial ? player.squadronGeneration : null;
+                this.attackId = 'shot_'+(++attackSerial);
+                this.damage = AIRCRAFT_CONFIGS[player.aircraftIndex].damagePerShot || 1;
+                this.attackerKey = AIRCRAFT_CONFIGS[player.aircraftIndex].key;
+                this.skinId = player.skinId || 'factory_default';
+                this.wraithProjectile = SkySkins.isWraithAttack(this) ? SkySkins.nextWraithProjectile(player) : null;
+                this.visualAge = 0;
+                this.prevX = x; this.prevY = y;
                 this.isHoming = (AIRCRAFT_CONFIGS[player.aircraftIndex] || {}).key === 'reaper';
                 this.vx = 0;
                 this.vy = this.speed;
@@ -3733,6 +3291,8 @@
             }
 
             update(dt) {
+                this.visualAge += dt;
+                this.prevX = this.x; this.prevY = this.y;
                 if (this.isHoming) {
                     const speed = Math.abs(this.speed);
                     const ux = this.vx / speed, uy = this.vy / speed;
@@ -3745,6 +3305,7 @@
                             const lateral = Math.abs(dx * uy - dy * ux);
                             return forward > 0 && lateral <= Math.max(30, forward * 0.75);
                         });
+                    if (bossEncounter?.phase === 'fight') candidates.push(...bossEncounter.targets().filter(target=>target.y<this.y));
                     candidates.sort((a, b) => Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y));
                     this.homingTarget = candidates[0] || null;
                     if (this.homingTarget) {
@@ -3766,6 +3327,8 @@
             }
 
             draw(ctx) {
+                if (this.wraithProjectile) { SkySkins.drawWraithProjectile(ctx,this); return; }
+                if (SkySkins.drawProjectile(ctx,this)) return;
                 ctx.save();
                 if (this.isSpecial) {
                     ctx.shadowColor = '#38bdf8';
@@ -3821,7 +3384,7 @@
             {
                 id: 1,
                 key: "fighter_1",
-                name: "Fighter 1",
+                name: "Player 1",
                 title: "Target Lock",
                 modelName: "new_model",
                 file: "new_model/player_default.png",
@@ -3829,7 +3392,6 @@
                 width: 46,
                 height: 68,
                 rotation: 0,
-                unlocked: true,
                 maxHp: 3,
                 maxArmor: 0,
                 damagePerShot: 1,
@@ -3862,7 +3424,6 @@
                 width: 54,
                 height: 65,
                 rotation: 0,
-                unlocked: false,
                 maxHp: 3, // Three health units, separate from the two armor units
                 maxArmor: 2, // Starts with 2x standard starting armor (2 units)
                 armorRecoveryInterval: STANDARD_DEFENSE_RECOVERY_MS * TITAN_ARMOR_RECOVERY_MULTIPLIER,
@@ -3897,7 +3458,6 @@
                 width: 46,
                 height: 63,
                 rotation: 0,
-                unlocked: true,
                 maxHp: 3,
                 maxArmor: 0,
                 damagePerShot: 1,
@@ -3929,7 +3489,6 @@
                 width: 48,
                 height: 64,
                 rotation: 0,
-                unlocked: true,
                 maxHp: 3, // Increased by exactly 1 HP (from 2 HP to 3 HP)
                 maxArmor: 0,
                 damagePerShot: 2,
@@ -3937,13 +3496,14 @@
                 descriptions: [
                     "3 HP combat helicopter platform",
                     "One-Shot Destruction passive wipes entire row",
-                    "Lethal firepower with balanced hull"
+                    "Wing Boost: 1.6x movement for 3s; 20s cooldown"
                 ],
-                skillName: "One-Shot Destruction",
+                skillName: "Wing Boost",
                 skillIcon: "💥",
-                skillCooldown: 0,
-                skillDuration: 0,
-                hasActiveSkill: false,
+                skillCooldown: 20000,
+                skillDuration: 3000,
+                hasActiveSkill: true,
+                boostMultiplier: 1.6,
                 exhausts: [
                     { xRatio: 0.182, yRatio: -0.108 },
                     { xRatio: -0.182, yRatio: -0.108 }
@@ -3962,7 +3522,6 @@
                 width: 48,
                 height: 66,
                 rotation: 0,
-                unlocked: false,
                 maxHp: 3, // Exactly 3 HP capacity
                 maxArmor: 0, // Secondary yellow health/armor indicator removed
                 armorRecoveryInterval: STANDARD_DEFENSE_RECOVERY_MS,
@@ -3998,8 +3557,8 @@
                         "width": 70,
                         "height": 68,
                         "rotation": 0,
-                        "unlocked": false,
-                        "promotionLocked": true,
+
+
                         "maxHp": 3,
                         "maxArmor": 0,
                         "damagePerShot": 1,
@@ -4031,8 +3590,8 @@
                         "width": 68,
                         "height": 68,
                         "rotation": 0,
-                        "unlocked": false,
-                        "promotionLocked": true,
+
+
                         "maxHp": 3,
                         "maxArmor": 0,
                         "damagePerShot": 1,
@@ -4064,8 +3623,8 @@
                         "width": 76,
                         "height": 67,
                         "rotation": 0,
-                        "unlocked": false,
-                        "promotionLocked": true,
+
+
                         "maxHp": 5,
                         "maxArmor": 0,
                         "damagePerShot": 1,
@@ -4097,15 +3656,15 @@
                         "width": 57,
                         "height": 68,
                         "rotation": 0,
-                        "unlocked": false,
-                        "promotionLocked": true,
+
+
                         "maxHp": 1,
                         "maxArmor": 0,
                         "damagePerShot": 1,
                         "shotsToDestroy": 2,
                         "descriptions": [
                                     "Survive lethal damage at 1 HP; bullet immunity for 5s (300s cooldown)",
-                                    "Every 8 completed enemy rows adds 1 empty HP slot",
+                                    "Every 12 completed rows adds one filled HP slot; existing missing HP stays missing",
                                     "Press E or Q to heal 1 HP; 60-second cooldown"
                         ],
                         "skillName": "Temporal Restoration",
@@ -4121,177 +3680,19 @@
             }
 ]);
 
+        AIRCRAFT_CONFIGS.push({id:10,key:'bomber',name:'Bomber',title:'Row Strike',modelName:'bomber',file:SkySkinCatalog.bodies.bomber.factory_default,engineType:'Flying Wing',width:96,height:64,rotation:0,maxHp:3,maxArmor:0,damagePerShot:1,shotsToDestroy:2,speed:280,hasActiveSkill:true,skillName:'Row Strike',skillIcon:'✦',skillCooldown:30000,skillDuration:0,exhausts:[{xRatio:-.18,yRatio:.24},{xRatio:.18,yRatio:.24}],flameWidth:10,flameHeight:24,descriptions:['3 HP with one standard 40s shield','Row Strike clears one front row; 30s cooldown','Special missile deals 20 damage to bosses']});
+
         // =========================================================================
-        // AIRCRAFT SKINS REGISTRY & PERSISTENCE MANAGER (existing collections retained)
+        // AIRCRAFT OWNERSHIP — CONFIRMED PLAYER PROGRESS
         // =========================================================================
-        const AIRCRAFT_SKINS_REGISTRY = {
-            fighter_1: [
-                { id: "fighter_1_default", name: "Standard Swept", file: "new_model/player_default.png", isDefault: true },
-                { id: "fighter_1_swept_1", name: "Swept Alpha", file: "assets/skins/fighter_1/aircraft_swept_wing_001.png" },
-                { id: "fighter_1_swept_2", name: "Swept Bravo", file: "assets/skins/fighter_1/aircraft_swept_wing_002.png" },
-                { id: "fighter_1_swept_3", name: "Swept Charlie", file: "assets/skins/fighter_1/aircraft_swept_wing_003.png" },
-                { id: "fighter_1_swept_4", name: "Swept Delta", file: "assets/skins/fighter_1/aircraft_swept_wing_004.png" }
-            ],
-            titan: [
-                { id: "titan_default", name: "Standard Titan", file: "new_model/skin_1.png", isDefault: true },
-                { id: "titan_heavy_1", name: "Heavy Dread I", file: "assets/skins/titan/aircraft_heavy_ship_001.png" },
-                { id: "titan_heavy_2", name: "Heavy Dread II", file: "assets/skins/titan/aircraft_heavy_ship_002.png" },
-                { id: "titan_heavy_3", name: "Heavy Dread III", file: "assets/skins/titan/aircraft_heavy_ship_003.png" },
-                { id: "titan_heavy_4", name: "Heavy Dread IV", file: "assets/skins/titan/aircraft_heavy_ship_004.png" },
-                { id: "titan_podded_1", name: "Podded Titan I", file: "assets/skins/titan/aircraft_podded_fighter_001.png" },
-                { id: "titan_podded_2", name: "Podded Titan II", file: "assets/skins/titan/aircraft_podded_fighter_002.png" },
-                { id: "titan_podded_3", name: "Podded Titan III", file: "assets/skins/titan/aircraft_podded_fighter_003.png" }
-            ],
-            phantom: [
-                { id: "phantom_default", name: "Standard Phantom", file: "new_model/skin_2.png", isDefault: true },
-                { id: "phantom_angular_1", name: "Angular Stealth I", file: "assets/skins/phantom/aircraft_angular_fighter_001.png" },
-                { id: "phantom_angular_2", name: "Angular Stealth II", file: "assets/skins/phantom/aircraft_angular_fighter_002.png" },
-                { id: "phantom_angular_3", name: "Angular Stealth III", file: "assets/skins/phantom/aircraft_angular_fighter_003.png" },
-                { id: "phantom_angular_4", name: "Angular Stealth IV", file: "assets/skins/phantom/aircraft_angular_fighter_004.png" },
-                { id: "phantom_podded_4", name: "Podded Stealth", file: "assets/skins/phantom/aircraft_podded_fighter_004.png" }
-            ],
-            corsair: [
-                { id: "corsair_default", name: "Standard CrossHair", file: "new_model/skin_4.png?v=crosshair-1", isDefault: true },
-                { id: "corsair_skin_01", name: "Ice Cyan", file: "assets/skins/corsair/aircraft_skin_01_ice_cyan.png?v=crosshair-1" },
-                { id: "corsair_skin_02", name: "Stealth Violet", file: "assets/skins/corsair/aircraft_skin_02_stealth_violet.png?v=crosshair-1" },
-                { id: "corsair_skin_03", name: "Jungle Camo", file: "assets/skins/corsair/aircraft_skin_03_jungle_camo.png?v=crosshair-1" },
-                { id: "corsair_skin_04", name: "Silver Blue", file: "assets/skins/corsair/aircraft_skin_04_silver_blue.png?v=crosshair-1" },
-                { id: "corsair_skin_05", name: "Racing Red", file: "assets/skins/corsair/aircraft_skin_05_racing_white_red.png?v=crosshair-1" },
-                { id: "corsair_skin_06", name: "Royal Gold", file: "assets/skins/corsair/aircraft_skin_06_royal_gold_navy.png?v=crosshair-1" },
-                { id: "corsair_skin_07", name: "Toxic Lime", file: "assets/skins/corsair/aircraft_skin_07_toxic_lime.png?v=crosshair-1" },
-                { id: "corsair_skin_08", name: "Desert Tan", file: "assets/skins/corsair/aircraft_skin_08_desert_tan.png?v=crosshair-1" },
-                { id: "corsair_skin_09", name: "Abyssal Teal", file: "assets/skins/corsair/aircraft_skin_09_abyssal_teal.png?v=crosshair-1" },
-                { id: "corsair_skin_10", name: "Molten Orange", file: "assets/skins/corsair/aircraft_skin_10_molten_orange.png?v=crosshair-1" }
-            ],
-            phantom_prototype: [
-                { id: "phantom_proto_default", name: "Standard Delta", file: "new_model/skin_3.png", isDefault: true },
-                { id: "phantom_proto_delta_1", name: "Stealth Delta I", file: "assets/skins/phantom_prototype/aircraft_stealth_delta_001.png" },
-                { id: "phantom_proto_delta_2", name: "Stealth Delta II", file: "assets/skins/phantom_prototype/aircraft_stealth_delta_002.png" },
-                { id: "phantom_proto_delta_3", name: "Stealth Delta III", file: "assets/skins/phantom_prototype/aircraft_stealth_delta_003.png" },
-                { id: "phantom_proto_delta_4", name: "Stealth Delta IV", file: "assets/skins/phantom_prototype/aircraft_stealth_delta_004.png" }
-            ]
-        };
-        window.AIRCRAFT_SKINS_REGISTRY = AIRCRAFT_SKINS_REGISTRY;
-
-        class AircraftSkinManager {
-            static getEquippedSkins() {
-                try {
-                    const raw = localStorage.getItem('air_strike_equipped_skins');
-                    return raw ? JSON.parse(raw) : {};
-                } catch (e) {
-                    return {};
-                }
-            }
-
-            static getEquippedSkinFor(aircraftKey) {
-                // Saved alternative preferences remain intact but can never become equipped.
-                return this.getSkinsForAircraft(aircraftKey).find(skin => skin.isDefault) || null;
-            }
-
-            static setEquippedSkin(aircraftKey, skinId) {
-                const skin = this.getSkinsForAircraft(aircraftKey).find(s => s.id === skinId);
-                if (!skin || !skin.isDefault) return false;
-                try {
-                    const map = this.getEquippedSkins();
-                    map[aircraftKey] = skinId;
-                    localStorage.setItem('air_strike_equipped_skins', JSON.stringify(map));
-                } catch (e) {}
-            }
-
-            static getSkinsForAircraft(aircraftKey) {
-                const skins = AIRCRAFT_SKINS_REGISTRY[aircraftKey];
-                if (skins && skins.length) return skins;
-                const cfg = AIRCRAFT_CONFIGS.find(cfg => cfg.key === aircraftKey);
-                return cfg ? [{id: aircraftKey + '_default', name: 'Standard ' + cfg.name, file: cfg.file, isDefault: true}] : [];
-            }
-        }
-        let inspectedSkin = null;
-        function isAlternativeSkinInspected() {
-            return !!inspectedSkin && !AircraftSkinManager.getSkinsForAircraft(inspectedSkin.key)
-                .find(s => s.id === inspectedSkin.id)?.isDefault;
-        }
-        function syncSkinSelectionUI() {
-            const blocked = isAlternativeSkinInspected(), button = document.getElementById('startBtn');
-            if (button) {
-                button.disabled = blocked;
-                button.setAttribute('aria-label', blocked ? 'Locked skin — choose the default skin' : 'Take Off and Start Flight');
-                document.getElementById('takeOffActionLabel').textContent = blocked ? 'SKIN LOCKED' : 'TAKE OFF';
-                document.getElementById('takeOffActionLabel').style.fontFamily = blocked ? 'Arial, sans-serif' : '';
-                const choose = document.getElementById('chooseDefaultSkinBtn'); if (choose) choose.hidden = !blocked;
-            }
-        }
-        window.AircraftSkinManager = AircraftSkinManager;
-
-        const DEV_UNLOCK_ALL_AIRCRAFT = true; // Testing only; never changes saved ownership or server permissions.
-        // Aircraft unlock state management: Titan (index 1) and Phantom Prototype (index 4) are locked
-        function isAircraftUnlocked(index) {
-            if (DEV_UNLOCK_ALL_AIRCRAFT && window.Ranked?.mode !== 'ranked' && Number.isInteger(index) && index >= 0 && index < AIRCRAFT_CONFIGS.length) return true;
-            return isAircraftEarned(index);
-        }
-        function isAircraftEarned(index) {
-            if (index < 0 || index >= AIRCRAFT_CONFIGS.length) return false;
-            const cfg = AIRCRAFT_CONFIGS[index];
-            if (!cfg) return false;
-            if (window.Ranked?.unlocked(cfg.key)) return true;
-            if (window.Ranked?.signedIn && (cfg.promotionLocked || cfg.key === 'titan' || cfg.key === 'phantom_prototype')) return false;
-            if (cfg.key === 'titan' || cfg.key === 'phantom_prototype') return false;
-            if (cfg.promotionLocked) {
-                try {
-                    const saved = JSON.parse(localStorage.getItem('air_strike_unlocked_aircraft') || '[]');
-                    return saved[index] === true;
-                } catch (e) { return false; }
-            }
-            return cfg.unlocked === true;
-        }
-
-        function unlockAircraft(index) {
-            if (index < 0 || index >= AIRCRAFT_CONFIGS.length) return false;
-            const cfg = AIRCRAFT_CONFIGS[index];
-            if (!cfg || cfg.key === 'titan' || cfg.key === 'phantom_prototype') {
-                if (cfg) cfg.unlocked = false;
-                return false;
-            }
-            if (cfg.promotionLocked) {
-                // Existing grant hook only; no purchase flow or automatic promotional grant.
-                try {
-                    const saved = JSON.parse(localStorage.getItem('air_strike_unlocked_aircraft') || '[]');
-                    const state = Array.isArray(saved) ? saved : [];
-                    state[index] = true;
-                    localStorage.setItem('air_strike_unlocked_aircraft', JSON.stringify(state));
-                } catch (e) { return false; }
-            } else {
-                cfg.unlocked = true;
-            }
-            if (typeof updateAircraftUI === 'function') {
-                updateAircraftUI();
-            }
-            return true;
-        }
-
+        function isAircraftUnlocked(index) { return SkyProfile.owns(index); }
         function getNextUnlockedAircraftIndex(currentIndex, step = 1) {
-            const total = AIRCRAFT_CONFIGS.length;
-            const dir = step >= 0 ? 1 : -1;
-            for (let i = 1; i <= total; i++) {
-                const candidate = (currentIndex + dir * i + total * 10) % total;
-                if (isAircraftUnlocked(candidate)) {
-                    return candidate;
-                }
-            }
+            const total=AIRCRAFT_CONFIGS.length,dir=step>=0?1:-1;
+            for(let i=1;i<=total;i++){const candidate=(currentIndex+dir*i+total*10)%total;if(isAircraftUnlocked(candidate))return candidate;}
             return 0;
         }
-
-        try {
-            const rawUnlocks = JSON.parse(localStorage.getItem('air_strike_unlocked_aircraft') || 'null');
-            const unlocks = Array.isArray(rawUnlocks) ? rawUnlocks.slice() : [true, false, true, true, false];
-            for (let i = 5; i < AIRCRAFT_CONFIGS.length; i++) unlocks[i] = unlocks[i] === true;
-            localStorage.setItem('air_strike_unlocked_aircraft', JSON.stringify(unlocks));
-            const savedIdx = parseInt(localStorage.getItem('air_strike_selected_aircraft'), 10);
-
-        } catch (e) {}
-
-        window.isAircraftUnlocked = isAircraftUnlocked;
-        window.unlockAircraft = unlockAircraft;
-        window.getNextUnlockedAircraftIndex = getNextUnlockedAircraftIndex;
+        window.isAircraftUnlocked=isAircraftUnlocked;
+        window.getNextUnlockedAircraftIndex=getNextUnlockedAircraftIndex;
 
         // Visual FX triggers
         function triggerShieldBreakEffect(x, y) {
@@ -4324,7 +3725,9 @@
                 this.speed = 280; // px/s keyboard speed
                 this.aircraftIndex = 0; // Active aircraft design (0 to 4)
                 this.modelRotation = 0; // Model orientation in game coordinates
+                this.boostTimer = 0;
                 this.shootCooldown = 0;
+                this.wraithShotIndex = 0; // Advances only for accepted Wraith shots; survives firing pauses and skin changes.
                 this.invulnerableTimer = 0;
                 this.isMovingForward = false;
 
@@ -4410,8 +3813,8 @@
                     index = isAircraftUnlocked(this.aircraftIndex) ? this.aircraftIndex : 0;
                 }
                 const cfg = AIRCRAFT_CONFIGS[index];
+                this.boostTimer = 0;
                 this.aircraftIndex = index;
-                if (gameState === 'PLAYING' && DEV_UNLOCK_ALL_AIRCRAFT && !isAircraftEarned(index)) testingSortie = true;
                 this.speed = cfg.speed || 280;
                 this.width = cfg.width;
                 this.height = cfg.height;
@@ -4448,25 +3851,12 @@
                 this.lockedTarget = null;
                 this.endSquadron();
 
-                // Apply equipped skin appearance for this aircraft class
-                this.applySkinForAircraft();
+                // Apply original aircraft appearance for this aircraft class
+                this.applyAircraftImage();
             }
 
-            applySkinForAircraft() {
-                const cfg = AIRCRAFT_CONFIGS[this.aircraftIndex] || AIRCRAFT_CONFIGS[0];
-                const skin = (typeof AircraftSkinManager !== 'undefined') ? AircraftSkinManager.getEquippedSkinFor(cfg.key) : null;
-                if (skin && !skin.isDefault && assets.skinImages && assets.skinImages[skin.id]) {
-                    this.activeSkinImg = assets.skinImages[skin.id];
-                    this.activeSkinObj = skin;
-                } else if (skin && !skin.isDefault) {
-                    const img = new Image();
-                    img.src = skin.file;
-                    this.activeSkinImg = img;
-                    this.activeSkinObj = skin;
-                } else {
-                    this.activeSkinImg = (assets.aircraft && assets.aircraft[this.aircraftIndex]) ? assets.aircraft[this.aircraftIndex] : assets.player;
-                    this.activeSkinObj = skin || null;
-                }
+            applyAircraftImage() {
+                SkySkins.apply(this);
             }
 
             updateDimensions() {
@@ -4480,9 +3870,9 @@
             setAircraft(index) {
                 if (index >= 0 && index < AIRCRAFT_CONFIGS.length) {
                     if (!isAircraftUnlocked(index)) return false;
-                    if (index === this.aircraftIndex) { this.applySkinForAircraft(); return true; }
+                    if (index === this.aircraftIndex) { this.applyAircraftImage(); return true; }
                     this.applyAircraftClass(index);
-                    this.applySkinForAircraft();
+                    this.applyAircraftImage();
                     if (assets.aircraft && assets.aircraft[index]) {
                         assets.player = assets.aircraft[index];
                     }
@@ -4510,10 +3900,18 @@
             }
 
             triggerActiveSkill() {
-                if (gameState !== 'PLAYING' || isPaused) return false;
+                if (gameState !== 'PLAYING' || isPaused || (bossEncounter && !bossEncounter.canShoot)) return false;
                 const cfg = AIRCRAFT_CONFIGS[this.aircraftIndex];
                 if (!cfg || !cfg.hasActiveSkill) return false;
                 if (this.skillCooldownTimer > 0) return false;
+
+                if (cfg.key === 'bomber') return launchBomberStrike();
+                if (cfg.key === 'corsair') {
+                    if(this.boostTimer>0)return false;
+                    this.boostTimer=cfg.skillDuration;this.skillCooldownTimer=cfg.skillCooldown;
+                    try{audio.playLaserShoot();}catch{}
+                    updateSkillButtonUI();return true;
+                }
 
                 if (cfg.key === 'chronos') {
                     if (this.hp >= this.maxHp) return false;
@@ -4529,6 +3927,7 @@
                     this.skillCooldownTimer = cfg.skillCooldown; // 35000
                     this.skillActiveTimer = cfg.skillDuration;   // 8000
                     this.findPriorityTarget();
+                    SkySkins.emit(this.skinId,'ability_activation',this.x,this.y,100);
                     try { audio.playLaserShoot(); } catch (e) {}
                     combatTexts.push(new CombatPopupText(this.x, this.y - 25, "TARGET LOCK (8s)!", '#00F0FF'));
                     updateSkillButtonUI();
@@ -4595,6 +3994,7 @@
             }
 
             findPriorityTarget() {
+                if(bossEncounter?.phase==='fight'){this.lockedTarget=bossEncounter.priorityTarget();return this.lockedTarget;}
                 const activeRows = getActiveFormationRows();
                 if (activeRows.length === 0) {
                     this.lockedTarget = null;
@@ -4621,7 +4021,7 @@
             takeDamage(source = 'PROJECTILE', hitX = this.x, hitY = this.y) {
                 const key = (AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).key;
                 if ((key === 'viper' && (source === 'PROJECTILE' || source === 'RAM')) ||
-                    (key === 'chronos' && this.chronosBulletImmunity > 0 && source === 'PROJECTILE')) {
+                    (key === 'chronos' && this.chronosBulletImmunity > 0 && (source === 'PROJECTILE' || source === 'BOSS_PROJECTILE'))) {
                     return { absorbedBy: 'IMMUNITY', hpLost: 0, fatal: false };
                 }
                 // 1. Process Automatic Shield First
@@ -4696,6 +4096,11 @@
             }
 
             update(dt, keys, mouse) {
+                const boostActive = AIRCRAFT_CONFIGS[this.aircraftIndex].key === 'corsair' && this.boostTimer > 0;
+                const boostScale = boostActive ? 1 + (AIRCRAFT_CONFIGS[this.aircraftIndex].boostMultiplier - 1) * Math.min(dt,this.boostTimer)/Math.max(1,dt) : 1;
+                const movementSpeed = this.speed * boostScale;
+                const follow = Math.min(.9,((AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).touchFollow || .18) * boostScale);
+                this.boostTimer = Math.max(0,(this.boostTimer||0)-dt);
                 if (gameState === 'PLAYING' && !isPaused) {
                     this.chronosRescueCooldown = Math.max(0, this.chronosRescueCooldown - dt);
                     this.chronosBulletImmunity = Math.max(0, this.chronosBulletImmunity - dt);
@@ -4725,8 +4130,8 @@
                     if (moveX !== 0 && moveY !== 0) {
                         speedMult = Math.SQRT1_2;
                     }
-                    this.x += moveX * speedMult * (this.speed * dt / 1000);
-                    this.y += moveY * speedMult * (this.speed * dt / 1000);
+                    this.x += moveX * speedMult * (movementSpeed * dt / 1000);
+                    this.y += moveY * speedMult * (movementSpeed * dt / 1000);
                     if (moveY < 0) {
                         movingForward = true;
                     }
@@ -4740,14 +4145,14 @@
                 if (!moved && touchDestination.active) {
                     const dx = touchDestination.x - this.x;
                     const dy = touchDestination.y - this.y;
-                    this.x += dx * ((AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).touchFollow || 0.18);
-                    this.y += dy * ((AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).touchFollow || 0.18);
+                    this.x += dx * follow;
+                    this.y += dy * follow;
                     if (dy < -4) movingForward = true;
                 } else if (!moved && mouse.active) {
                     const dx = mouse.x - this.x;
                     const dy = mouse.y - this.y;
-                    this.x += dx * ((AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).touchFollow || 0.18);
-                    this.y += dy * ((AIRCRAFT_CONFIGS[this.aircraftIndex] || {}).touchFollow || 0.18);
+                    this.x += dx * follow;
+                    this.y += dy * follow;
                     if (dy < -4) {
                         movingForward = true;
                     }
@@ -4836,7 +4241,7 @@
                         this.skillActiveTimer = 0;
                         this.lockedTarget = null;
                     } else {
-                        if (!this.lockedTarget || !this.lockedTarget.active) {
+                        if (!this.lockedTarget || !this.lockedTarget.active || (bossEncounter?.blocksRegular && !bossEncounter.targets().includes(this.lockedTarget))) {
                             this.findPriorityTarget();
                         }
                     }
@@ -4849,7 +4254,7 @@
                     this.squadronShootTimer += dt;
 
                     // Coordinated barrage every 180ms
-                    if (this.squadronShootTimer >= 180 && !isDestinationTraveling()) {
+                    if (this.squadronShootTimer >= 180 && !isDestinationTraveling() && (!bossEncounter || bossEncounter.canShoot)) {
                         this.squadronShootTimer = 0;
                         bullets.push(new Bullet(this.x, this.y - 30, true));
                         for (const w of this.wingmen) {
@@ -4864,7 +4269,7 @@
                             const living = front.aircraft.filter(a => a.active && a.hp > 0 && a.y >= 0 && a.y <= GAME_HEIGHT);
                             if (living.length > 0) {
                                 const target = living[Math.floor(Math.random() * living.length)];
-                                handleHelicopterHit(target, front, true, 'phantom_prototype', this.squadronGeneration);
+                                handleHelicopterHit(target, front, true, 'phantom_prototype', this.squadronGeneration, {skinId:this.skinId,isSpecial:true,attackerKey:'phantom_prototype'});
                             }
                         }
                     }
@@ -4874,13 +4279,14 @@
             }
 
             shoot() {
-                if (gameState !== 'PLAYING' || isPaused || this.hp <= 0 || this.shootCooldown > 0 || isDestinationTraveling()) return false;
+                if (gameState !== 'PLAYING' || isPaused || this.hp <= 0 || this.shootCooldown > 0 || isDestinationTraveling() || (bossEncounter && !bossEncounter.canShoot)) return false;
                 this.shootCooldown = 150; // ms cooldown
                 const cfg = AIRCRAFT_CONFIGS[this.aircraftIndex] || AIRCRAFT_CONFIGS[0];
                 const spawnY = this.y - Math.round(cfg.height / 2) - 2;
 
                 // Projectile behavior is selected by the existing Bullet implementation.
                 bullets.push(new Bullet(this.x, spawnY));
+                if (!SkySkins.emitSkyborneShot(this,bullets[bullets.length-1])) SkySkins.emit(this.skinId,'muzzle_flash',this.x,spawnY,30);
 
                 try { audio.playShoot(); } catch (e) {}
                 return true;
@@ -4891,8 +4297,8 @@
                 if (this.squadronActive && this.wingmen.length > 0) {
                     ctx.save();
                     ctx.globalAlpha = 0.30;
-                    const wingmanImg = (this.activeSkinImg && this.activeSkinImg.complete && this.activeSkinImg.naturalWidth > 0)
-                        ? this.activeSkinImg
+                    const wingmanImg = (this.aircraftImage && this.aircraftImage.complete && this.aircraftImage.naturalWidth > 0)
+                        ? this.aircraftImage
                         : ((assets.aircraft && assets.aircraft[4]) || assets.player);
                     const pw = 48;
                     const ph = 66;
@@ -4917,7 +4323,7 @@
                 }
 
                 // 2. Draw Fighter 1 Target Lock holographic reticle tracking locked target
-                if (this.aircraftIndex === 0 && this.skillActiveTimer > 0 && this.lockedTarget && this.lockedTarget.active) {
+                if (this.aircraftIndex === 0 && this.skinId !== 'red_wraith' && this.skillActiveTimer > 0 && this.lockedTarget && this.lockedTarget.active) {
                     ctx.save();
                     const tx = this.lockedTarget.x;
                     const ty = this.lockedTarget.y;
@@ -4961,6 +4367,7 @@
                     ctx.restore();
                 }
 
+                SkySkins.drawTarget(ctx,this,bossEncounter?.boss);
                 // 3. Draw Shield Aura when Ready or Shield Flash when Broken
                 if (this.hasStandardShield() && this.shieldReady) {
                     ctx.save();
@@ -5005,7 +4412,8 @@
                 const ph = cfg.height;
 
                 // CrossHair uses rotors for lift; projectile exhaust effects are unchanged.
-                if (this.isMovingForward && cfg.key !== 'corsair') {
+                if (cfg.key === 'bomber' && this.hp > 0 && gameState === 'PLAYING') SkySkins.bomberExhaust(ctx,this,cfg);
+                if (this.isMovingForward && cfg.key !== 'corsair' && cfg.key !== 'bomber' && !SkySkins.exhaust(ctx,this.skinId,cfg)) {
                     const flamePair = assets.flames ? assets.flames[this.aircraftIndex] : null;
                     const isPulse = (Math.floor(Date.now() / 90) % 3 === 0);
                     const flameImg = (isPulse && flamePair && flamePair.large) ? flamePair.large : (flamePair ? flamePair.small : null);
@@ -5026,38 +4434,39 @@
                 }
 
                 // Aircraft Body
-                const acImg = (this.activeSkinImg && this.activeSkinImg.complete && this.activeSkinImg.naturalWidth > 0)
-                    ? this.activeSkinImg
+                const acImg = (this.aircraftImage && this.aircraftImage.complete && this.aircraftImage.naturalWidth > 0)
+                    ? this.aircraftImage
                     : ((assets.aircraft && assets.aircraft[this.aircraftIndex]) ? assets.aircraft[this.aircraftIndex] : assets.player);
-                if (acImg && acImg.complete && acImg.naturalWidth > 0) {
-                    ctx.drawImage(acImg, -Math.round(pw / 2), -Math.round(ph / 2), pw, ph);
+                if (SkySkins.drawBody(ctx,this,cfg)) { /* Composite already includes body and lightning aura. */ }
+                else if (acImg && acImg.complete && acImg.naturalWidth > 0) {
+                    if (cfg.key === 'bomber') SkySkins.fit(ctx,acImg,0,0,pw,ph);
+                    else ctx.drawImage(acImg, -Math.round(pw / 2), -Math.round(ph / 2), pw, ph);
                 } else {
                     ctx.fillStyle = '#0f172a';
                     ctx.fillRect(-Math.round(pw / 2), -Math.round(ph / 2), pw, ph);
                 }
 
-                if (cfg.key === 'corsair') drawCrossHairRotor(ctx, pw, ph, this.rotorAngle);
+                if (cfg.key === 'corsair') drawCrossHairRotor(ctx, pw, ph, this.rotorAngle,this.skinId);
+                else SkySkins.bodyEffects(ctx,this.skinId,cfg);
                 ctx.restore();
             }
         }
 
-        // The stable 'corsair' key and skin IDs intentionally retain saved inventory compatibility.
-        function drawCrossHairRotor(ctx, width, height, angle) {
+        // The stable 'corsair' class key retains inventory compatibility.
+        function drawCrossHairRotor(ctx, width, height, angle,skinId='factory_default') {
+            if(skinId==='phoenix_fire')return; // Animated phoenix wings replace the cosmetic rotor.
             ctx.save();
-            // Landing skids, raised mast, and independently rotating main blades.
-            ctx.fillStyle = '#8897a5';
-            for (const side of [-1, 1]) {
-                ctx.fillRect(side * width * .28 - 1, -height * .18, 2, height * .43);
-                ctx.fillRect(side * width * .28 - 3, height * .24, 6, 2);
-            }
+            // Only the main blades and their center hub overlay the original body.
             ctx.translate(0, -height * .025);
-            ctx.fillStyle = '#111827'; ctx.fillRect(-4, -3, 8, 10);
-            ctx.fillStyle = '#cbd5e1'; ctx.fillRect(-2, -4, 4, 8);
             ctx.save(); ctx.rotate(angle);
+            const woodRotor=skinId==='elder_wood'?SkySkins.image(SkySkinCatalog.elderWoodRotor):null;
+            if(SkySkins.ready(woodRotor))SkySkins.fit(ctx,woodRotor,0,0,width*.98,width*.98*64/288);
+            else {
             ctx.fillStyle = '#0f172a'; ctx.fillRect(-width * .49, -2, width * .98, 4);
             ctx.fillStyle = '#94a3b8'; ctx.fillRect(-width * .48, -2, width * .96, 2);
             ctx.fillStyle = '#facc15';
             ctx.fillRect(-width * .49, -2, 3, 4); ctx.fillRect(width * .49 - 3, -2, 3, 4);
+            }
             ctx.restore(); ctx.fillStyle = '#e2e8f0'; ctx.fillRect(-2, -2, 4, 4);
             ctx.restore();
         }
@@ -5065,7 +4474,7 @@
         function updateCrossHairPreviews(now) {
             // Reuse the game's animation loop for all DOM previews, including Records.
             for (const img of document.querySelectorAll('img')) {
-                const eligible = /(?:skin_4\.png|aircraft_4\.png|skins\/corsair\/)/.test(img.getAttribute('src') || '');
+                const eligible = img.dataset.aircraftKey === 'corsair' || /(?:skin_4\.png|aircraft_4\.png)/.test(img.getAttribute('src') || '');
                 let wrap = img.parentElement;
                 if (!eligible) {
                     if (wrap?.classList.contains('crosshair-preview')) {
@@ -5086,7 +4495,7 @@
                 const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, w, h); ctx.imageSmoothingEnabled = false;
                 const scale = Math.min(w / img.naturalWidth, h / img.naturalHeight);
                 ctx.save(); ctx.translate(w / 2, h / 2);
-                drawCrossHairRotor(ctx, img.naturalWidth * scale, img.naturalHeight * scale, now * Math.PI * 6 / 1000);
+                drawCrossHairRotor(ctx, img.naturalWidth * scale, img.naturalHeight * scale, now * Math.PI * 6 / 1000,img.dataset.skinId);
                 ctx.restore();
             }
         }
@@ -5334,14 +4743,26 @@
         let fireballs = [];
         let combatTexts = [];
 
-        function triggerCinematicExplosion(x, y, isBig = false) {
+        function triggerCinematicExplosion(x, y, isBig = false, sourceSkin = null) {
             audio.playExplosion(isBig);
+            if (SkySkins.eliminate(sourceSkin,x,y,isBig)) return;
             animatedExplosions.push(new AnimatedExplosion(x, y, isBig));
             shockwaves.push(new ShockwaveRing(x, y, isBig ? 65 : 38));
             const count = isBig ? 18 : 10;
             for (let i = 0; i < count; i++) {
                 fireballs.push(new Fireball(x, y));
             }
+        }
+
+        // Ordinary vocabulary-enemy deaths only; bosses/player/environment keep their original VFX.
+        const enemyDeathEffects = new WeakSet();
+        function triggerEnemyDestruction(enemy, isBig = false, projectile = null, legacySkin = SkySkins.eliminationSkin(projectile)) {
+            if (!(enemy instanceof EnemyAircraft) || enemyDeathEffects.has(enemy)) return false;
+            enemyDeathEffects.add(enemy);
+            const replaced = SkySkins.enemyDestruction(projectile?.skinId, enemy.x, enemy.y, isBig);
+            if (replaced) audio.playExplosion(isBig);
+            else triggerCinematicExplosion(enemy.x, enemy.y, isBig, legacySkin);
+            return replaced;
         }
 
         // =========================================================================
@@ -5377,6 +4798,7 @@
 
         // Diving-Attack Mechanic for Active Helicopter Rows
         function triggerDivingAttackIfEligible() {
+            if (bossEncounter?.blocksRegular) return;
             // Find active formations with living helicopters that have finished entry animation
             const candidateFormations = formations.filter(f => 
                 !f.destroyed && 
@@ -5415,6 +4837,7 @@
         let formationIdCounter = 1;
 
         function onHelicopterRowDestroyed(row) {
+            if (bossEncounter?.blocksRegular) return;
             if (!row || !row.id) return;
             if (destroyedRowIds.has(row.id)) return;
 
@@ -5439,17 +4862,19 @@
             if (gameState === 'PLAYING' && player.hp > 0 &&
                 AIRCRAFT_CONFIGS[player.aircraftIndex].key === 'chronos') {
                 player.chronosTurns++;
-                if (player.chronosTurns >= 8) {
-                    player.chronosTurns -= 8;
-                    player.chronosMaxHp++;
+                if (player.chronosTurns >= 12) {
+                    player.chronosTurns -= 12;
+                    player.chronosMaxHp = player.maxHp + 1;
                     player.maxHp = player.chronosMaxHp;
-                    // Capacity only: the new slot stays empty until healed.
+                    player.hp = Math.min(player.maxHp, player.hp + 1);
+                    // One new filled HP slot; maxHp - hp stays unchanged, so existing damage is not healed.
                     updateLeftHUD();
                 }
             }
 
             // Each unique completed row advances difficulty once; scheduling uses milliseconds.
             spawnInterval = Math.max(MIN_SPAWN_INTERVAL, spawnInterval - ROW_SPAWN_DECREMENT);
+            if (gameState === 'PLAYING' && player.hp > 0) bossEncounter?.rowCompleted(destroyedRowsCount);
         }
         window.onHelicopterRowDestroyed = onHelicopterRowDestroyed;
         window.destroyedRowIds = destroyedRowIds;
@@ -5555,6 +4980,7 @@
 
         let isAdvancingMission = false;
         function advanceToNextMission() {
+            if (bossEncounter?.blocksRegular) return;
             if (isAdvancingMission) return;
             isAdvancingMission = true;
             try {
@@ -5584,6 +5010,7 @@
         const setupDangerPanelWord = updateDangerHUDDisplay;
 
         function spawnFormation() {
+            if (bossEncounter?.blocksRegular) return;
             const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
             if (lastFormationSpawnTime > 0 && (now - lastFormationSpawnTime) < MIN_SPAWN_INTERVAL) {
                 console.warn("[SpawnScheduler] Blocked spawn attempt earlier than 4.0s minimum interval.");
@@ -5607,7 +5034,7 @@
 
             // 3. Spawn the new row at the top (slot 0, y = 110)
             formationIdCounter++;
-            const count = window.Ranked?.mode === 'ranked' ? Ranked.formationSize() : ((Math.random() < 0.5) ? 3 : 4);
+            const count = ((Math.random() < 0.5) ? 3 : 4);
             const newRow = new EnemyFormation(
                 `form_${formationIdCounter}`,
                 count,
@@ -5633,6 +5060,7 @@
         // When active formations accumulate (> 4 active rows, or a row reaches danger slot 5 near player):
         // Deduct 1 armor point and immediately destroy the breached row with explosions
         function checkOvercrowding() {
+            if (bossEncounter?.blocksRegular) return;
             if (gameState !== 'PLAYING') return;
 
             const activeFormations = formations.filter(f => !f.destroyed);
@@ -5657,6 +5085,7 @@
                 const toDestroy = activeFormations.slice(0, Math.min(2, activeFormations.length));
 
                 for (const f of toDestroy) {
+                    if (bossEncounter?.blocksRegular) break;
                     f.destroyed = true;
                     for (const a of f.aircraft) {
                         if (a.active) {
@@ -5675,7 +5104,8 @@
             }
         }
 
-        function handleHelicopterHit(enemy, row, isFrontRow, attackerClass, skillGeneration = null) {
+        function handleHelicopterHit(enemy, row, isFrontRow, attackerClass, skillGeneration = null, projectile = null) {
+            if (bossEncounter?.blocksRegular) return;
             if (!enemy || !row || enemy.formation !== row || !row.aircraft.includes(enemy)) return;
             if (!enemy.active || enemy.hp <= 0) return;
             if (row && row.destroyed) return;
@@ -5710,7 +5140,8 @@
             if (row.destroyed) return; // Atomic guard against duplicate row clears
             if (enemy.hp > 0) return;
             row.destroyed = true;
-            triggerCinematicExplosion(enemy.x, enemy.y, true);
+            // Attribute death visuals to the fatal projectile, even if the equipped skin has since changed.
+            const deathImpact = triggerEnemyDestruction(enemy, true, projectile);
 
             // Evaluate correctness only at the exact moment of destruction.
             // Determine correctness using the destroyed helicopter's own assigned vocabulary question and answer mapping, not whichever question happens to be displayed on screen.
@@ -5734,7 +5165,7 @@
                 for (const a of row.aircraft) {
                     if (a.active) {
                         a.active = false;
-                        triggerCinematicExplosion(a.x, a.y, a === enemy);
+                        triggerEnemyDestruction(a, a === enemy, projectile);
                     }
                 }
 
@@ -5771,7 +5202,7 @@
                 for (const a of row.aircraft) {
                     if (a.active) {
                         a.active = false;
-                        triggerCinematicExplosion(a.x, a.y, a === enemy);
+                        triggerEnemyDestruction(a, a === enemy, projectile);
                     }
                 }
 
@@ -5781,7 +5212,7 @@
                 if (typeof player !== 'undefined' && player.hp <= 0) {
                     triggerCinematicExplosion(player.x, player.y, true);
                     endGame();
-                    return;
+                    return deathImpact;
                 }
 
                 // If front row was wiped, advance to promote next row and activate its preassigned question
@@ -5789,11 +5220,13 @@
                     advanceToNextMission();
                 }
             }
+            return deathImpact;
         }
         window.handleHelicopterHit = handleHelicopterHit;
 
         // Collision & Damage Resolution
         function checkCollisions() {
+            if (bossEncounter?.blocksRegular) return;
             // 1. Check Player Bullets vs Active Formation Rows (Enforce Front-to-Back Combat)
             const activeRows = getActiveFormationRows();
             const frontRow = activeRows.length > 0 ? activeRows[0] : null;
@@ -5801,8 +5234,10 @@
             const attackerKey = (AIRCRAFT_CONFIGS[player.aircraftIndex] || {}).key || 'fighter_1';
 
             for (let bi = bullets.length - 1; bi >= 0; bi--) {
+                if (bossEncounter?.blocksRegular) break;
                 const b = bullets[bi];
-                if (!b.active) continue;
+                if (!b.active || b.bomberSpecial) continue;
+                if (bossEncounter?.blocksRegular) break;
                 if (b.isSpecial && (!player.squadronActive || player.squadronTimer <= 0 ||
                     player.aircraftIndex !== 4 || b.skillGeneration !== player.squadronGeneration)) {
                     b.active = false;
@@ -5822,9 +5257,12 @@
                         const hitH = enemy.height * 0.7;
 
                         if (Math.abs(b.x - enemy.x) < hitW && Math.abs(b.y - enemy.y) < hitH) {
+                            const hasDeathImpact = !!SkySkins.enemyDestructionSequence(b.skinId);
+                            if (!hasDeathImpact) SkySkins.impact(b.skinId,b.skinId==='skyborne'?b.x:enemy.x,b.skinId==='skyborne'?b.y:enemy.y);
                             b.active = false;
                             hitRegistered = true;
-                            handleHelicopterHit(enemy, frontRow, true, b.isSpecial ? 'phantom_prototype' : (b.isHoming ? 'reaper' : attackerKey), b.isSpecial ? b.skillGeneration : null);
+                            const deathImpact = handleHelicopterHit(enemy, frontRow, true, b.isSpecial ? 'phantom_prototype' : (b.isHoming ? 'reaper' : attackerKey), b.isSpecial ? b.skillGeneration : null, b);
+                            if (hasDeathImpact && !deathImpact) SkySkins.impact(b.skinId,b.skinId==='skyborne'?b.x:enemy.x,b.skinId==='skyborne'?b.y:enemy.y);
                             break;
                         }
                     }
@@ -5839,15 +5277,19 @@
                         const hitH = enemy.height * 0.7;
 
                         if (Math.abs(b.x - enemy.x) < hitW && Math.abs(b.y - enemy.y) < hitH) {
+                            const hasDeathImpact = !!SkySkins.enemyDestructionSequence(b.skinId);
+                            if (!hasDeathImpact) SkySkins.impact(b.skinId,b.skinId==='skyborne'?b.x:enemy.x,b.skinId==='skyborne'?b.y:enemy.y);
                             b.active = false;
                             hitRegistered = true;
-                            handleHelicopterHit(enemy, secondRow, false, b.isSpecial ? 'phantom_prototype' : (b.isHoming ? 'reaper' : attackerKey), b.isSpecial ? b.skillGeneration : null);
+                            const deathImpact = handleHelicopterHit(enemy, secondRow, false, b.isSpecial ? 'phantom_prototype' : (b.isHoming ? 'reaper' : attackerKey), b.isSpecial ? b.skillGeneration : null, b);
+                            if (hasDeathImpact && !deathImpact) SkySkins.impact(b.skinId,b.skinId==='skyborne'?b.x:enemy.x,b.skinId==='skyborne'?b.y:enemy.y);
                             break;
                         }
                     }
                 }
             }
 
+            if (bossEncounter?.blocksRegular) return;
             // 2. Check Enemy Bullets vs Player Jet (Priority 4)
             for (let ebi = enemyBullets.length - 1; ebi >= 0; ebi--) {
                 const eb = enemyBullets[ebi];
@@ -6111,10 +5553,10 @@
             if (iconEl) iconEl.textContent = cfg.skillIcon || '⚡';
             if (nameEl) nameEl.textContent = cfg.skillName || 'ABILITY';
 
-            const isSkillRunning = (player.skillActiveTimer > 0) || (player.squadronActive && player.squadronTimer > 0);
+            const isSkillRunning = (player.boostTimer > 0) || (player.skillActiveTimer > 0) || (player.squadronActive && player.squadronTimer > 0);
             if (isSkillRunning) {
                 // Skill is actively running
-                const activeMs = Math.max(player.skillActiveTimer || 0, player.squadronTimer || 0);
+                const activeMs = Math.max(player.boostTimer || 0, player.skillActiveTimer || 0, player.squadronTimer || 0);
                 const sec = Math.ceil(activeMs / 1000);
                 if (btn) {
                     btn.className = 'tactical-skill-btn active-skill';
@@ -6159,143 +5601,25 @@
             updateLeftHUD();
         }
 
-        let currentSortieId = `sorties_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        let currentSortieId = 'sorties_'+crypto.randomUUID();
         let lastEndGameSortieId = null;
-        let testingSortie = false;
-
-        async function endGame() {
-            player.endSquadron();
-            clearTouchCommands();
-            gameState = 'GAMEOVER';
-            if (typeof updateMobileControlsVisibility === 'function') updateMobileControlsVisibility();
-            const cappedScore = Math.min(999999, Math.max(0, score));
-
-            // Guard against duplicate increments on retry/re-render
-            let newlyEarnedMedal = null;
-            let newTop1 = false;
-            let newTop10 = false;
-
-            if (!testingSortie && lastEndGameSortieId !== currentSortieId) {
-                lastEndGameSortieId = currentSortieId;
-                if (window.Ranked) Ranked.recordCompletion({matchId: currentSortieId, score: cappedScore, targetsCleared, aircraftIndex: player.aircraftIndex});
-
-                const prevMedal = (typeof FlightRewardsManager !== 'undefined') ? FlightRewardsManager.getActiveMedal() : { id: 'novice' };
-                const curAircraftIdx = (player ? player.aircraftIndex : 0);
-
-                if (typeof FlightRewardsManager !== 'undefined') {
-                    FlightRewardsManager.recordFlightSortie({
-                        score: cappedScore,
-                        mode: window.Ranked?.mode || 'normal', matchId: currentSortieId,
-                        targetsCleared: targetsCleared,
-                        aircraftIndex: curAircraftIdx
-                    });
-
-                    const newMedal = FlightRewardsManager.getActiveMedal();
-                    if (newMedal && prevMedal && newMedal.id !== prevMedal.id && newMedal.id !== 'novice') {
-                        newlyEarnedMedal = newMedal;
-                    }
-                }
-
-                // Leaderboard submission
-                if (cappedScore > 0 && typeof leaderboardService !== 'undefined' && leaderboardService) {
-                    try {
-                        await leaderboardService.submitScore({
-                            matchId: currentSortieId,
-                            score: cappedScore,
-                            targetsCleared: targetsCleared,
-                            aircraftIndex: curAircraftIdx,
-                            nickname: leaderboardService.getPlayerNickname()
-                        });
-
-                        // Check ranking for Top 1 / Top 10 badges
-                        const topData = await leaderboardService.getTopScores(10);
-                        const currentNick = leaderboardService.getPlayerNickname().toUpperCase();
-                        const rankIdx = topData.entries.findIndex(e => e.nickname.toUpperCase() === currentNick);
-                        if (rankIdx !== -1 && typeof FlightRewardsManager !== 'undefined') {
-                            const rank = rankIdx + 1;
-                            const achCheck = FlightRewardsManager.checkLeaderboardAchievements(rank);
-                            newTop1 = achCheck.newlyEarnedTop1;
-                            newTop10 = achCheck.newlyEarnedTop10;
-                        }
-                    } catch (err) {
-                        console.error("Leaderboard score submission error:", err);
-                    }
-                }
-            }
-
-            // Populate Stage 1 Immediate Game Over Screen
-            const finalScoreEl = document.getElementById('finalScoreText');
-            if (finalScoreEl) {
-                finalScoreEl.textContent = String(cappedScore).padStart(6, '0');
-            }
-
-            const finalTargetsEl = document.getElementById('finalTargetsText');
-            if (finalTargetsEl) {
-                finalTargetsEl.textContent = targetsCleared;
-            }
-
-            const finalSortiesEl = document.getElementById('finalSortiesCountText');
-            if (finalSortiesEl && typeof FlightRewardsManager !== 'undefined') {
-                finalSortiesEl.textContent = FlightRewardsManager.getCompletedFlights();
-            }
-
-            const finalIntervalEl = document.getElementById('finalIntervalText');
-            if (finalIntervalEl) {
-                finalIntervalEl.textContent = (spawnInterval / 1000).toFixed(2) + 's';
-            }
-
-            // Aircraft used in sortie
-            const curAircraftIdx = (player ? player.aircraftIndex : 0);
-            const activeCfg = (typeof AIRCRAFT_CONFIGS !== 'undefined' && AIRCRAFT_CONFIGS[curAircraftIdx]) ? AIRCRAFT_CONFIGS[curAircraftIdx] : { name: "Fighter 1", file: "new_model/player_default.png" };
-            const aircraftImg = document.getElementById('gameOverAircraftImg');
-            const aircraftName = document.getElementById('gameOverAircraftName');
-            if (aircraftImg) {
-                aircraftImg.src = activeCfg.file;
-                aircraftImg.onerror = () => { aircraftImg.src = 'assets/player_default.png'; };
-            }
-            if (aircraftName) {
-                aircraftName.textContent = activeCfg.name.toUpperCase();
-            }
-
-            // Rewards showcase
-            const rewardHeader = document.getElementById('gameOverRewardHeader');
-            const rewardTitle = document.getElementById('gameOverRewardTitle');
-            const rewardDesc = document.getElementById('gameOverRewardDesc');
-            const rewardImg = document.getElementById('gameOverRewardMedalImg');
-
-            if (newTop1) {
-                if (rewardHeader) rewardHeader.textContent = "🏆 NEW ACHIEVEMENT UNLOCKED!";
-                if (rewardTitle) rewardTitle.textContent = "SKY LEGEND #1";
-                if (rewardDesc) rewardDesc.textContent = "Claimed all-time Leaderboard Rank #1!";
-                if (rewardImg) rewardImg.src = "assets/leaderboard/top1.png";
-            } else if (newTop10) {
-                if (rewardHeader) rewardHeader.textContent = "🏆 NEW ACHIEVEMENT UNLOCKED!";
-                if (rewardTitle) rewardTitle.textContent = "TOP 10 PILOT";
-                if (rewardDesc) rewardDesc.textContent = "Entered all-time Leaderboard Top 10!";
-                if (rewardImg) rewardImg.src = "assets/leaderboard/top 10 enter.png";
-            } else if (newlyEarnedMedal) {
-                if (rewardHeader) rewardHeader.textContent = "🎖️ NEW MEDAL AWARDED!";
-                if (rewardTitle) rewardTitle.textContent = newlyEarnedMedal.name.toUpperCase();
-                if (rewardDesc) rewardDesc.textContent = newlyEarnedMedal.desc;
-                if (rewardImg) rewardImg.src = newlyEarnedMedal.file;
-            } else if (typeof FlightRewardsManager !== 'undefined') {
-                const curMedal = FlightRewardsManager.getActiveMedal();
-                if (rewardHeader) rewardHeader.textContent = "PILOT FLIGHT MEDAL";
-                if (rewardTitle) rewardTitle.textContent = curMedal.name.toUpperCase();
-                if (rewardDesc) rewardDesc.textContent = curMedal.desc;
-                if (rewardImg) rewardImg.src = curMedal.file;
-            }
-
-            // Show Stage 1 overlay (strictly hide Stage 2)
-            document.getElementById('detailedRecordsOverlay')?.classList.add('hidden');
-            document.getElementById('gameOverOverlay')?.classList.remove('hidden');
+        let sortieOwner=SkyProfile.name;
+        function endGame() {
+            if(lastEndGameSortieId===currentSortieId)return;
+            player.endSquadron();player.boostTimer=0;bossEncounter.abort();clearTouchCommands();gameState='GAMEOVER';if(player.skinId==='skyborne')SkySkins.clear();
+            if(typeof updateMobileControlsVisibility==='function')updateMobileControlsVisibility();
+            const flight={id:currentSortieId,score:Math.min(999999,Math.max(0,score)),targetsCleared,aircraftIndex:player.aircraftIndex,completed:true,finishedAt:Date.now()};
+            SkyProfile.complete(sortieOwner,flight);
+            lastEndGameSortieId=currentSortieId;
+            SkyUI.showResult(flight);
         }
 
         function resetGame() {
-            if (isAlternativeSkinInspected()) return;
-            if (window.Ranked && !Ranked.beforeReset()) return;
-            currentSortieId = `sorties_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-            if (window.Ranked) Ranked.afterReset();
+            SkyUI.stopPromotion();
+            sortieOwner=SkyProfile.name;
+            currentSortieId = 'sorties_'+crypto.randomUUID();
+            bossEncounter.reset(currentSortieId);
+            suspendedBossRows=[];SkySkins.clear();document.getElementById('dangerHUDContainer').style.visibility='';
             score = 0;
             targetsCleared = 0;
             destroyedRowsCount = 0;
@@ -6309,15 +5633,7 @@
             ambientFlash = 0;
             isPaused = false;
 
-            let keepAircraftIndex = 0;
-            try {
-                const saved = localStorage.getItem('air_strike_selected_aircraft');
-                if (saved !== null) keepAircraftIndex = parseInt(saved, 10) || 0;
-                else if (typeof nextMatchAircraftIndex !== 'undefined') keepAircraftIndex = nextMatchAircraftIndex;
-                else if (player) keepAircraftIndex = player.aircraftIndex;
-            } catch (e) {
-                if (player) keepAircraftIndex = player.aircraftIndex;
-            }
+            let keepAircraftIndex=SkyProfile.selected;
             if (!isAircraftUnlocked(keepAircraftIndex)) {
                 keepAircraftIndex = 0;
             }
@@ -6325,8 +5641,8 @@
             clearTouchCommands();
             mouse.active = false;
             player = new Player();
-            testingSortie = DEV_UNLOCK_ALL_AIRCRAFT && !isAircraftEarned(keepAircraftIndex);
             player.setAircraft(keepAircraftIndex);
+            SkySkins.emit(player.skinId,'frost_particles',player.x,player.y,85);
             armor = player.hp;
             updateAircraftUI();
             updateLeftHUD();
@@ -6345,9 +5661,9 @@
 
             // FORMATION MANDATE: Always start with EXACTLY TWO ROWS of aircraft
             // row1 (front row, slot 1) gets initTarget1
-            const row1 = new EnemyFormation(`form_init_1`, window.Ranked?.mode === 'ranked' ? Ranked.formationSize() : 3, initTarget1, 1);
+            const row1 = new EnemyFormation(`form_init_1`, 3, initTarget1, 1);
             // row2 (rear row, slot 0) gets initTarget2
-            const row2 = new EnemyFormation(`form_init_2`, window.Ranked?.mode === 'ranked' ? Ranked.formationSize() : 3, initTarget2, 0);
+            const row2 = new EnemyFormation(`form_init_2`, 3, initTarget2, 0);
             formations.push(row2, row1);
 
             lastDangerTargetWord = "";
@@ -6375,6 +5691,107 @@
             if (typeof updateMobileControlsVisibility === 'function') updateMobileControlsVisibility();
         }
 
+
+        let suspendedBossRows = [];
+        const bossRewardClaims = new Set();
+        function claimBossVictory(boss, encounterId, attack = null) {
+            if (boss.hp !== 0 || (boss.id===3&&!boss.defeatComplete) || bossRewardClaims.has(encounterId)) return false;
+            let saved = [];
+            try { saved = JSON.parse(sessionStorage.getItem('sky.boss.victoryClaims') || '[]'); } catch {}
+            if (!Array.isArray(saved)) saved = [];
+            if (saved.includes(encounterId)) { bossRewardClaims.add(encounterId); return false; }
+            bossRewardClaims.add(encounterId);
+            try { sessionStorage.setItem('sky.boss.victoryClaims', JSON.stringify([...saved,encounterId].slice(-32))); } catch {}
+            score = Math.min(999999, score + boss.reward);
+            updateLeftHUD();
+            if(boss.id!==3)triggerCinematicExplosion(boss.x,boss.y,true,SkySkins.eliminationSkin(attack?.projectile));
+            return true;
+        }
+        bossEncounter = new SkyBosses.Director({
+            context:()=>({w:GAME_WIDTH,h:GAME_HEIGHT,player,bullets}),
+            layout:()=>{
+                const field=canvas.getBoundingClientRect(),hud=document.getElementById('leftHUDContainer').getBoundingClientRect();
+                if(!field.height)return {};
+                const unitsPerPixel=GAME_HEIGHT/field.height;
+                const controls=['inGameSkillBtn','touchShootBtn'].map(id=>document.getElementById(id).getBoundingClientRect()).filter(r=>r.width>0&&r.height>0);
+                return {unitsPerPixel,hudBottom:(hud.bottom-field.top)*unitsPerPixel,controlsTop:controls.length?(Math.min(...controls.map(r=>r.top))-field.top)*unitsPerPixel:GAME_HEIGHT-100};
+            },
+            suspend:()=>{
+                suspendedBossRows = formations.filter(f=>!f.destroyed);
+                formations=[];bullets=[];enemyBullets=[];player.lockedTarget=null;
+                document.getElementById('dangerHUDContainer').style.visibility='hidden';
+            },
+            resume:()=>{
+                formations=suspendedBossRows.filter(f=>!f.destroyed);suspendedBossRows=[];
+                document.getElementById('dangerHUDContainer').style.visibility='';
+                advanceToNextMission();
+            },
+            validAttack:a=>gameState==='PLAYING'&&!isPaused&&a.projectile?.active&&
+                (a.kind!=='phantom'||(player.aircraftIndex===4&&player.squadronActive&&player.squadronTimer>0&&a.projectile.skillGeneration===player.squadronGeneration)),
+            // Evaluate the mark at impact; in-flight shots never retain an expired damage bonus.
+            damageMultiplier:(b,a)=>a.kind==='normal'&&SkySkins.isWraithAttack(a.projectile)&&
+                player.aircraftIndex===0&&player.skinId==='red_wraith'&&player.skillActiveTimer>0&&
+                (player.lockedTarget===b||(player.lockedTarget?.kind==='core'&&player.lockedTarget.ownerBoss===b))&&b.active&&b.hp>0?2:1,
+            impact:(b,a)=>SkySkins.impact(a.skinId,a.skinId==='skyborne'&&a.projectile?a.projectile.x:b.x,a.skinId==='skyborne'&&a.projectile?a.projectile.y:b.y),
+            victory:claimBossVictory,
+            localExplosion:(target,a)=>triggerCinematicExplosion(target.x,target.y,false,SkySkins.eliminationSkin(a?.projectile)),
+            cinematicExplosion:(position,big)=>{try{audio.playExplosion(big);}catch{}},
+            launch:()=>{try{audio.playEnemyShoot();}catch{}},
+            gun:()=>{try{audio.playEnemyShoot();}catch{}},
+            playerHit:p=>{
+                if (player.invulnerableTimer>0) return;
+                player.takeDamage('BOSS_PROJECTILE',p.x,p.y);player.invulnerableTimer=1200;
+                if(player.hp<=0){triggerCinematicExplosion(player.x,player.y,true);endGame();}
+            }
+        });
+        // Preload supplied boss modules once; all animation uses the existing game loop.
+        for(const path of SkyFortress.assets)SkySkins.image(path);
+        for(const path of ['assets/bosses/boss1/body.png','assets/bosses/boss1/rotor.png','assets/bosses/boss1/launcher.png','assets/bosses/boss1/missile.png',
+            'assets/bosses/boss2/body/boss01_body.png','assets/bosses/boss2/missile_launcher/boss01_missile_launcher.png',
+            'assets/bosses/boss2/turrets/left/boss01_turret_left.png','assets/bosses/boss2/turrets/right/boss01_turret_right.png',
+            'assets/bosses/boss2/projectiles/boss01_gun_projectile.png'])SkySkins.image(path);
+        for(let rotor=1;rotor<=4;rotor++)for(let frame=1;frame<=4;frame++)SkySkins.image('assets/bosses/boss2/rotors/rotor_'+rotor+'/boss01_rotor_'+rotor+'_frame_0'+frame+'.png');
+
+        class BomberMissile extends Bullet {
+            constructor(row, target) {
+                super(player.x,player.y-30);
+                this.bomberSpecial=true;this.isHoming=false;this.row=row;this.age=0;
+                const dx=target.x-this.x,dy=target.y-this.y,len=Math.hypot(dx,dy)||1;
+                this.vx=dx/len*410;this.vy=dy/len*410;
+            }
+            update(dt) {
+                this.prevX=this.x;this.prevY=this.y;this.age+=dt;
+                this.x+=this.vx*dt/1000;this.y+=this.vy*dt/1000;
+                if(this.age>6000||this.y<-50||this.y>GAME_HEIGHT+50||this.x<-50||this.x>GAME_WIDTH+50)this.active=false;
+                if(!this.row||!this.active)return;
+                if(this.row.destroyed||bossEncounter.blocksRegular){this.active=false;return;}
+                if(SkyBosses.segmentBox(this.prevX,this.prevY,this.x,this.y,GAME_WIDTH/2,this.row.y,GAME_WIDTH/2,30)){
+                    this.active=false;clearBomberRow(this.row,this.skinId);
+                }
+            }
+            draw(ctx) {
+                ctx.save();ctx.translate(this.x,this.y);ctx.rotate(Math.atan2(this.vy,this.vx)+Math.PI/2);
+                SkySkins.drawBomberMissile(ctx,this);ctx.restore();
+            }
+        }
+        function clearBomberRow(row,skinId) {
+            if(bossEncounter.blocksRegular||!row||row.destroyed||!formations.includes(row)||!row.aircraft.some(a=>a.active))return false;
+            const front=getActiveFormationRows()[0];if(front!==row)return false;
+            row.destroyed=true;
+            for(const enemy of row.aircraft)if(enemy.active){enemy.active=false;enemy.hp=0;const deathImpact=triggerEnemyDestruction(enemy,true,{skinId},skinId==='money_printer'?skinId:null);if(!deathImpact)SkySkins.impact(skinId,enemy.x,enemy.y);}
+            targetsCleared++;score=Math.min(999999,score+500);
+            onHelicopterRowDestroyed(row);advanceToNextMission();updateLeftHUD();return true;
+        }
+        function launchBomberStrike() {
+            if(gameState!=='PLAYING'||isPaused||player.hp<=0||AIRCRAFT_CONFIGS[player.aircraftIndex].key!=='bomber'||player.skillCooldownTimer>0||!bossEncounter.canShoot||isDestinationTraveling())return false;
+            const row=bossEncounter.phase==='fight'?null:getActiveFormationRows()[0];
+            if(!row&&!bossEncounter.boss)return false;
+            const target=bossEncounter.phase==='fight'?(bossEncounter.priorityTarget()||bossEncounter.boss):{x:GAME_WIDTH/2,y:row.y};
+            player.skillCooldownTimer=30000;const missile=new BomberMissile(row,target);bullets.push(missile);
+            SkySkins.emitBomberLaunch(missile,player);
+            try{if(player.skinId==='king_ghidorah')audio.playGhidorahRoar();else audio.playLaserShoot();}catch{}updateSkillButtonUI();return true;
+        }
+
         // =========================================================================
         // 10. MAIN 60 FPS GAME LOOP
         // =========================================================================
@@ -6382,6 +5799,7 @@
 
         function gameLoop(now) {
             updateCrossHairPreviews(now);
+            SkySkins.updatePreviews(now);
             const dt = Math.min(now - lastTime, 100);
             lastTime = now;
 
@@ -6413,6 +5831,7 @@
                     triggerDivingAttackIfEligible();
                 }
 
+                if (!bossEncounter.blocksRegular) {
                 // Formation spawn scheduling: Time-based authoritative scheduler
                 spawnTimer += dt;
                 if (spawnTimer >= spawnInterval) {
@@ -6449,10 +5868,13 @@
                 for (const eb of enemyBullets) eb.update(dt);
                 enemyBullets = enemyBullets.filter(eb => eb.active);
 
+                }
                 for (const b of bullets) b.update(dt);
                 bullets = bullets.filter(b => b.active);
 
                 checkCollisions();
+                bossEncounter.update(dt);
+                SkySkins.update(dt);
 
                 for (const exp of animatedExplosions) exp.update(dt);
                 for (const s of shockwaves) s.update(dt);
@@ -6476,6 +5898,7 @@
                 form.draw(ctx);
             }
 
+            bossEncounter.draw(ctx,(c,path,x,y,w,h)=>SkySkins.fit(c,SkySkins.image(path),x,y,w,h));
             // 4. Draw Bullets & Enemy Bullets
             for (const b of bullets) b.draw(ctx);
             for (const eb of enemyBullets) eb.draw(ctx);
@@ -6490,6 +5913,7 @@
             for (const s of shockwaves) s.draw(ctx);
             for (const f of fireballs) f.draw(ctx);
             for (const ct of combatTexts) ct.draw(ctx);
+            SkySkins.draw(ctx);
 
             // Ambient Flash
             if (ambientFlash > 0) {
@@ -6574,903 +5998,18 @@
             measurementId: "G-63DHJDD32P"
         };
 
-        class LeaderboardService {
-            constructor() {
-                this.localStoreKey = 'air_strike_leaderboard_data';
-                this.lastSubmittedMatchId = null;
-                this.isConfigured = false;
-                this.db = null;
-                this.cachedLegends = new Set();
-                this.lastRemoteTop1Check = 0;
-
-                // Verified Initial Demonstration Entries (Distinct Aircraft & Qualifying Sortie Medals)
-                this.demoEntries = [
-                    { id: 'demo_1', nickname: 'ACE_GUNNER', score: 18500, targetsCleared: 37, aircraftIndex: 0, date: '2026-10-23', isDemo: true, hasHeldTop1: true, medal: { name: '30th Flight Honor', desc: '30+ Qualified Sorties (>10,000 PTS)', file: 'assets/leaderboard/30th flight honor.png' } },
-                    { id: 'demo_2', nickname: 'SKY_VIPER', score: 14200, targetsCleared: 28, aircraftIndex: 2, date: '2026-10-24', isDemo: true, medal: { name: '20th Flight Honor', desc: '20+ Qualified Sorties (>10,000 PTS)', file: 'assets/leaderboard/20th flight.png' } },
-                    { id: 'demo_3', nickname: 'STEALTH_99', score: 9800, targetsCleared: 19, aircraftIndex: 1, date: '2026-10-24', isDemo: true, medal: { name: 'Novice Pilot Medal', desc: 'Score <= 10,000 PTS (Unqualified)', file: 'assets/leaderboard/Weathered Novice Pilot Medal.png' } },
-                    { id: 'demo_4', nickname: 'DELTA_ONE', score: 7500, targetsCleared: 15, aircraftIndex: 3, date: '2026-10-25', isDemo: true, medal: { name: 'Novice Pilot Medal', desc: 'Score <= 10,000 PTS (Unqualified)', file: 'assets/leaderboard/Weathered Novice Pilot Medal.png' } },
-                    { id: 'demo_5', nickname: 'ROOKIE_07', score: 4200, targetsCleared: 8, aircraftIndex: 4, date: '2026-10-25', isDemo: true, medal: { name: 'Novice Pilot Medal', desc: 'Score <= 10,000 PTS (Unqualified)', file: 'assets/leaderboard/Weathered Novice Pilot Medal.png' } },
-                    { id: 'demo_6', nickname: 'RECRUIT_9', score: 2100, targetsCleared: 4, aircraftIndex: 0, date: '2026-10-25', isDemo: true, medal: { name: 'Novice Pilot Medal', desc: 'Score <= 10,000 PTS (Unqualified)', file: 'assets/leaderboard/Weathered Novice Pilot Medal.png' } }
-                ];
-
-                this.initFirebase();
-            }
-
-            initFirebase() {
-                try {
-                    if (typeof firebase !== 'undefined' && SKYDOMINATORS_FIREBASE_CONFIG.apiKey) {
-                        const appName = "skydominators";
-                        let app;
-                        const existingApps = firebase.apps || [];
-                        const found = existingApps.find(a => a.name === appName);
-                        if (found) {
-                            app = found;
-                        } else {
-                            app = firebase.initializeApp(SKYDOMINATORS_FIREBASE_CONFIG, appName);
-                        }
-                        this.db = firebase.firestore(app);
-                        this.isConfigured = true;
-                        console.log("[LeaderboardService] Connected to Sky Dominators Cloud Firestore.");
-                        this.syncLegendsCache();
-                    }
-                } catch (err) {
-                    console.warn("[LeaderboardService] Firebase Firestore init error, fallback to local:", err);
-                    this.isConfigured = false;
-                    this.db = null;
-                }
-            }
-
-            async syncLegendsCache() {
-                if (!this.db || !navigator.onLine) return;
-                try {
-                    const snap = await this.db.collection("legends").get();
-                    if (snap && !snap.empty) {
-                        snap.forEach(doc => {
-                            const d = doc.data();
-                            const nick = (d.nickname || doc.id || "").trim().toUpperCase();
-                            if (nick) this.cachedLegends.add(nick);
-                        });
-                    }
-                } catch (e) {
-                    console.warn("[LeaderboardService] Legends sync warning:", e);
-                }
-            }
-
-            getPlayerNickname() {
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    return urlParams.get('user') || localStorage.getItem('air_strike_player_nickname') || localStorage.getItem('vocab_user') || 'PILOT-01';
-                } catch (e) {
-                    return 'PILOT-01';
-                }
-            }
-
-            setPlayerNickname(nickname) {
-                if (!nickname) return;
-                const clean = nickname.trim().toUpperCase().slice(0, 12);
-                try {
-                    localStorage.setItem('air_strike_player_nickname', clean);
-                    window.dispatchEvent(new Event('student-name-changed'));
-                } catch (e) {}
-                return clean;
-            }
-
-            getLocalEntries() {
-                try {
-                    const raw = localStorage.getItem(this.localStoreKey);
-                    return raw ? JSON.parse(raw) : [];
-                } catch (e) {
-                    return [];
-                }
-            }
-
-            saveLocalEntries(entries) {
-                try {
-                    localStorage.setItem(this.localStoreKey, JSON.stringify(entries));
-                } catch (e) {}
-            }
-
-            recordServerTop1Achievement(nickname, record) {
-                if (!nickname) return;
-                const clean = nickname.trim().toUpperCase();
-                this.cachedLegends.add(clean);
-
-                try {
-                    let history = {};
-                    const raw = localStorage.getItem('air_strike_server_top1_history');
-                    if (raw) history = JSON.parse(raw);
-                    if (!history[clean]) {
-                        history[clean] = {
-                            nickname: clean,
-                            achievedAt: Date.now(),
-                            score: record ? record.score : 0,
-                            matchId: record ? record.id : null
-                        };
-                        localStorage.setItem('air_strike_server_top1_history', JSON.stringify(history));
-                    }
-                } catch (e) {}
-
-                try {
-                    const achRaw = localStorage.getItem('air_strike_achievements');
-                    const ach = achRaw ? JSON.parse(achRaw) : { top1: false, top10: false };
-                    ach.top1 = true;
-                    localStorage.setItem('air_strike_achievements', JSON.stringify(ach));
-                } catch (e) {}
-            }
-
-            hasPlayerAchievedServerTop1(nickname = null) {
-                const targetNick = (nickname || this.getPlayerNickname()).trim().toUpperCase();
-                if (!targetNick) return false;
-
-                // 1. Check in-memory legends cache from Firestore
-                if (this.cachedLegends.has(targetNick)) {
-                    return true;
-                }
-
-                // 2. Check persistent verified server Top 1 history registry
-                try {
-                    const raw = localStorage.getItem('air_strike_server_top1_history');
-                    if (raw) {
-                        const history = JSON.parse(raw);
-                        if (history && history[targetNick]) {
-                            this.cachedLegends.add(targetNick);
-                            return true;
-                        }
-                    }
-                } catch (e) {}
-
-                // 3. Check recorded local sortie entries
-                const local = this.getLocalEntries();
-                const matchingLocal = local.filter(e => (e.nickname || '').trim().toUpperCase() === targetNick);
-                if (matchingLocal.some(e => e.hasHeldTop1 === true)) {
-                    this.recordServerTop1Achievement(targetNick, matchingLocal.find(e => e.hasHeldTop1));
-                    return true;
-                }
-
-                // 4. Check demo entries
-                const matchingDemo = this.demoEntries.filter(e => (e.nickname || '').trim().toUpperCase() === targetNick);
-                if (matchingDemo.some(e => e.hasHeldTop1 === true)) {
-                    this.recordServerTop1Achievement(targetNick, matchingDemo.find(e => e.hasHeldTop1));
-                    return true;
-                }
-
-                return false;
-            }
-
-            async getTopScores(limit = 10) {
-                let onlineEntries = null;
-                let isOnlineMode = false;
-
-                // 1. Attempt Firestore read if online and configured
-                if (this.isConfigured && this.db && navigator.onLine) {
-                    try {
-                        const legPromise = this.db.collection("legends").get().catch(() => null);
-                        const lbPromise = this.db.collection("leaderboard").orderBy("score", "desc").limit(50).get();
-
-                        const [lbSnap, legSnap] = await Promise.all([lbPromise, legPromise]);
-
-                        if (legSnap && !legSnap.empty) {
-                            legSnap.forEach(doc => {
-                                const d = doc.data();
-                                const nick = (d.nickname || doc.id || "").trim().toUpperCase();
-                                if (nick) this.cachedLegends.add(nick);
-                            });
-                        }
-
-                        if (lbSnap && !lbSnap.empty) {
-                            onlineEntries = [];
-                            lbSnap.forEach(doc => {
-                                const d = doc.data();
-                                if (d && typeof d.score === 'number') {
-                                    const entryNick = (d.nickname || 'PILOT').toUpperCase();
-                                    onlineEntries.push({
-                                        id: doc.id,
-                                        nickname: entryNick,
-                                        score: Math.min(999999, Math.max(0, d.score)),
-                                        targetsCleared: d.targetsCleared || 0,
-                                        aircraftIndex: d.aircraftIndex !== undefined ? d.aircraftIndex : 0,
-                                        date: d.date || new Date().toISOString().slice(0, 10),
-                                        timestamp: d.timestamp || 0,
-                                        isDemo: false,
-                                        hasHeldTop1: !!(this.cachedLegends.has(entryNick) || d.hasHeldTop1),
-                                        medal: d.medal || (typeof FlightRewardsManager !== 'undefined' ? FlightRewardsManager.getMedalForScoreOrSorties(d.score) : null)
-                                    });
-                                }
-                            });
-                            isOnlineMode = true;
-                        }
-                    } catch (err) {
-                        console.warn("[LeaderboardService] Firestore read failed, fallback to local storage:", err);
-                        onlineEntries = null;
-                        isOnlineMode = false;
-                    }
-                }
-
-                // 2. Fallback / Merge with demo entries & local offline entries
-                const local = this.getLocalEntries();
-                const currentNickname = this.getPlayerNickname();
-                const playerAchievements = (typeof FlightRewardsManager !== 'undefined') ? FlightRewardsManager.getAchievements() : { top1: false };
-
-                let combined = [];
-                if (onlineEntries && onlineEntries.length > 0) {
-                    combined = onlineEntries;
-                    if (combined.length < 6) {
-                        const existingNicks = new Set(combined.map(e => e.nickname.toUpperCase()));
-                        for (const demo of this.demoEntries) {
-                            if (!existingNicks.has(demo.nickname.toUpperCase())) {
-                                combined.push({ ...demo });
-                            }
-                        }
-                    }
-                } else {
-                    combined = [...local, ...this.demoEntries];
-                }
-
-                // Sort descending by score, tie-break by timestamp ASC (earliest first)
-                combined.sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return (a.timestamp || 0) - (b.timestamp || 0);
-                });
-
-                // Top 1 holder tracking
-                if (combined.length > 0 && combined[0].score > 0) {
-                    combined[0].hasHeldTop1 = true;
-                    this.cachedLegends.add(combined[0].nickname.toUpperCase());
-                }
-
-                const top = combined.slice(0, limit).map((entry, idx) => {
-                    const isYou = (entry.nickname.toUpperCase() === currentNickname.toUpperCase());
-                    const heldTop1 = !!(entry.hasHeldTop1 || this.cachedLegends.has(entry.nickname.toUpperCase()) || (isYou && playerAchievements.top1));
-                    return {
-                        rank: idx + 1,
-                        nickname: entry.nickname,
-                        mode: entry.mode || 'normal',
-                        score: Math.min(999999, Math.max(0, entry.score || 0)),
-                        targetsCleared: entry.targetsCleared || 0,
-                        aircraftIndex: entry.aircraftIndex !== undefined ? entry.aircraftIndex : 0,
-                        date: entry.date || new Date().toISOString().slice(0, 10),
-                        isCurrentPlayer: isYou,
-                        isDemo: !!entry.isDemo,
-                        hasHeldTop1: heldTop1,
-                        medal: entry.medal || (typeof FlightRewardsManager !== 'undefined' ? FlightRewardsManager.getMedalForScoreOrSorties(entry.score || 0) : null)
-                    };
-                });
-
-                return {
-                    status: isOnlineMode ? 'ONLINE' : 'LOCAL_DEMO',
-                    isConfigured: this.isConfigured,
-                    entries: top
-                };
-            }
-
-            async submitScore({ matchId, score, targetsCleared, aircraftIndex, nickname, mode = window.Ranked?.mode || 'normal' }) {
-                if (!matchId) matchId = `match_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-
-                // Duplicate submission guard
-                if (this.lastSubmittedMatchId === matchId) {
-                    return { success: false, duplicate: true, message: 'Match score already submitted.' };
-                }
-                this.lastSubmittedMatchId = matchId;
-
-                const effectiveNickname = (nickname || this.getPlayerNickname()).trim().toUpperCase().slice(0, 12);
-                const clampedScore = Math.floor(Math.min(999999, Math.max(0, score || 0)));
-                const clampedTargets = Math.floor(Math.max(0, targetsCleared || 0));
-                const clampedAircraft = Math.floor(Math.min(4, Math.max(0, aircraftIndex !== undefined ? aircraftIndex : 0)));
-
-                const record = {
-                    mode,
-                    id: matchId,
-                    nickname: effectiveNickname,
-                    score: clampedScore,
-                    targetsCleared: clampedTargets,
-                    aircraftIndex: clampedAircraft,
-                    date: new Date().toISOString().slice(0, 10),
-                    timestamp: Date.now(),
-                    isDemo: false,
-                    medal: (typeof FlightRewardsManager !== 'undefined') ? FlightRewardsManager.getMedalForScoreOrSorties(clampedScore) : null
-                };
-
-                // Always save to local storage as resilient offline cache
-                const local = this.getLocalEntries();
-                local.push(record);
-                local.sort((a, b) => b.score - a.score);
-                this.saveLocalEntries(local.slice(0, 50));
-
-                // Check Top 1 threshold
-                const combined = [...local, ...this.demoEntries];
-                combined.sort((a, b) => b.score - a.score);
-                const currentHighest = combined.length > 0 ? combined[0].score : 0;
-                const isTop1 = (clampedScore >= currentHighest && clampedScore > 0);
-
-                if (isTop1) {
-                    record.hasHeldTop1 = true;
-                    this.recordServerTop1Achievement(effectiveNickname, record);
-                    if (typeof FlightRewardsManager !== 'undefined') {
-                        FlightRewardsManager.checkLeaderboardAchievements(1);
-                    }
-                }
-
-                // Online Firestore submission
-                let onlineSuccess = false;
-                if (this.isConfigured && this.db && navigator.onLine) {
-                    try {
-                        const lbPromise = this.db.collection("leaderboard").doc(matchId).set({
-                            id: matchId,
-                            mode,
-                            nickname: effectiveNickname,
-                            score: clampedScore,
-                            targetsCleared: clampedTargets,
-                            aircraftIndex: clampedAircraft,
-                            date: record.date,
-                            timestamp: record.timestamp,
-                            medal: record.medal || null
-                        });
-
-                        let legPromise = Promise.resolve();
-                        if (isTop1) {
-                            legPromise = this.db.collection("legends").doc(effectiveNickname).set({
-                                nickname: effectiveNickname,
-                                hasHeldTop1: true,
-                                highestScore: clampedScore,
-                                lastAchievedAt: record.timestamp
-                            }, { merge: true });
-                        }
-
-                        await Promise.all([lbPromise, legPromise]);
-                        onlineSuccess = true;
-                        console.log("[LeaderboardService] Score submitted to Cloud Firestore:", matchId);
-                    } catch (err) {
-                        console.warn("[LeaderboardService] Cloud Firestore write error, saved locally:", err);
-                        onlineSuccess = false;
-                    }
-                }
-
-                return {
-                    success: true,
-                    isOnline: onlineSuccess,
-                    message: onlineSuccess ? 'Score recorded in Cloud Leaderboard.' : 'Score saved to local records (cloud sync offline).',
-                    record
-                };
-            }
-        }
-
-        const leaderboardService = new LeaderboardService();
-        window.leaderboardService = leaderboardService;
-
-        function escapeHtml(str) {
-            return String(str || '').replace(/[&<>"']/g, s => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[s]));
-        }
-
-        // =========================================================================
-        // FLIGHT REWARDS & PERMANENT MEDAL / ACHIEVEMENT MANAGER
-        // =========================================================================
-        class FlightRewardsManager {
-            static getCompletedFlights() {
-                try {
-                    return parseInt(localStorage.getItem('air_strike_completed_flights'), 10) || 0;
-                } catch (e) {
-                    return 0;
-                }
-            }
-
-            static setCompletedFlights(count) {
-                try {
-                    localStorage.setItem('air_strike_completed_flights', String(count));
-                } catch (e) {}
-            }
-
-            static getAllTimeHighScore() {
-                try {
-                    return parseInt(localStorage.getItem('air_strike_all_time_high_score'), 10) || 0;
-                } catch (e) {
-                    return 0;
-                }
-            }
-
-            static setAllTimeHighScore(score) {
-                try {
-                    localStorage.setItem('air_strike_all_time_high_score', String(score));
-                } catch (e) {}
-            }
-
-            static getAchievements() {
-                try {
-                    const raw = localStorage.getItem('air_strike_achievements');
-                    const ach = raw ? JSON.parse(raw) : { top1: false, top10: false };
-                    if (typeof leaderboardService !== 'undefined' && leaderboardService && typeof leaderboardService.hasPlayerAchievedServerTop1 === 'function') {
-                        ach.top1 = leaderboardService.hasPlayerAchievedServerTop1();
-                    }
-                    return ach;
-                } catch (e) {
-                    return { top1: false, top10: false };
-                }
-            }
-
-            static saveAchievements(achievements) {
-                try {
-                    localStorage.setItem('air_strike_achievements', JSON.stringify(achievements));
-                } catch (e) {}
-            }
-
-            static getPersonalRecords() {
-                try {
-                    const raw = localStorage.getItem('air_strike_personal_records');
-                    return raw ? JSON.parse(raw) : [];
-                } catch (e) {
-                    return [];
-                }
-            }
-
-            static savePersonalRecords(records) {
-                try {
-                    localStorage.setItem('air_strike_personal_records', JSON.stringify(records));
-                } catch (e) {}
-            }
-
-            static recordFlightSortie({ score, targetsCleared, aircraftIndex, mode = 'normal', matchId }) {
-                const cappedScore = Math.min(999999, Math.max(0, score));
-                let flights = this.getCompletedFlights();
-
-                // Flight Medal Eligibility:
-                // A flight only counts as a completed flight for Flight Medal progression
-                // if the player's final score is strictly greater than 10,000 points.
-                // A score of exactly 10,000 or below must not count as a completed flight for this medal.
-                const isQualifyingSortie = (cappedScore >= 12000);
-                // Retain the legacy >10K counter unchanged; the new >=12K ledger is separate.
-                // Ranked.recordCompletion counts both modes exactly once using the match ID.
-
-                let high = this.getAllTimeHighScore();
-                if (cappedScore > high) {
-                    high = cappedScore;
-                    this.setAllTimeHighScore(high);
-                }
-
-                if (cappedScore > 0) {
-                    const records = this.getPersonalRecords();
-                    records.push({
-                        mode, matchId,
-                        score: cappedScore,
-                        targetsCleared: targetsCleared || 0,
-                        aircraftIndex: aircraftIndex !== undefined ? aircraftIndex : 0,
-                        date: new Date().toISOString().slice(0, 10),
-                        timestamp: Date.now(),
-                        isQualifyingSortie: isQualifyingSortie,
-                        medal: this.getMedalForScoreOrSorties(cappedScore, 0)
-                    });
-                    records.sort((a, b) => b.score - a.score);
-                    this.savePersonalRecords(records.slice(0, 6));
-                }
-
-                return {
-                    flights,
-                    isQualifyingSortie,
-                    allTimeHighScore: high,
-                    activeMedal: this.getActiveMedal()
-                };
-            }
-
-            static getMedalForScoreOrSorties(score = 0, flights = 0) {
-                const effectiveFlights = Math.max(flights, this.getCompletedFlights());
-                if (score >= 18000 || effectiveFlights >= 30) {
-                    return {
-                        id: 'honor_30',
-                        name: '30th Flight Honor',
-                        desc: '30+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/30th flight honor.png'
-                    };
-                } else if (score >= 14000 || effectiveFlights >= 20) {
-                    return {
-                        id: 'honor_20',
-                        name: '20th Flight Honor',
-                        desc: '20+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/20th flight.png'
-                    };
-                } else if (score > 10000 || effectiveFlights >= 10) {
-                    return {
-                        id: 'honor_10',
-                        name: '10th Flight Honor',
-                        desc: '10+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/10th flight.png'
-                    };
-                }
-                return {
-                    id: 'novice',
-                    name: 'Novice Pilot Medal',
-                    desc: effectiveFlights < 10 ? `${effectiveFlights}/10 Qualified Sorties (>10,000 PTS)` : 'Score > 10,000 PTS to qualify',
-                    file: 'assets/leaderboard/Weathered Novice Pilot Medal.png'
-                };
-            }
-
-            static getActiveMedal(flights = this.getCompletedFlights()) {
-                if (flights >= 30) {
-                    return {
-                        id: 'honor_30',
-                        name: '30th Flight Honor',
-                        desc: '30+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/30th flight honor.png'
-                    };
-                } else if (flights >= 20) {
-                    return {
-                        id: 'honor_20',
-                        name: '20th Flight Honor',
-                        desc: '20+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/20th flight.png'
-                    };
-                } else if (flights >= 10) {
-                    return {
-                        id: 'honor_10',
-                        name: '10th Flight Honor',
-                        desc: '10+ Qualified Sorties (>10,000 PTS)',
-                        file: 'assets/leaderboard/10th flight.png'
-                    };
-                }
-                return {
-                    id: 'novice',
-                    name: 'Novice Pilot Medal',
-                    desc: flights < 10 ? `${flights}/10 Sorties (>10K PTS)` : 'Score > 10,000 PTS to qualify',
-                    file: 'assets/leaderboard/Weathered Novice Pilot Medal.png'
-                };
-            }
-
-            static checkLeaderboardAchievements(rank) {
-                if (!rank || rank <= 0) return { newlyEarnedTop1: false, newlyEarnedTop10: false };
-                const achievements = this.getAchievements();
-                let newlyEarnedTop1 = false;
-                let newlyEarnedTop10 = false;
-
-                if (rank <= 10 && !achievements.top10) {
-                    achievements.top10 = true;
-                    newlyEarnedTop10 = true;
-                }
-                if (rank === 1 && !achievements.top1) {
-                    achievements.top1 = true;
-                    newlyEarnedTop1 = true;
-                }
-
-                if (newlyEarnedTop1 || newlyEarnedTop10) {
-                    this.saveAchievements(achievements);
-                }
-
-                return { newlyEarnedTop1, newlyEarnedTop10, achievements };
-            }
-        }
-        window.FlightRewardsManager = FlightRewardsManager;
-
-        // =========================================================================
-        // UNIFIED REUSABLE LEADERBOARD & FLIGHT RECORDS RENDERER
-        // Shared component used in Main Menu and Detailed Best Records Screen
-        // =========================================================================
-        class SkyDominatorsBoardsRenderer {
-            static renderSharedBoard(containerEl, entries) {
-                if (!containerEl) return;
-                // Leaderboard entries with ~10px vertical gap (1.8% at ~560px board height = 10.08px)
-                const rowConfigs = [
-                    { top: 31.2, height: 8.5, rankColor: '#facc15' },
-                    { top: 41.5, height: 8.5, rankColor: '#cbd5e1' },
-                    { top: 51.8, height: 8.5, rankColor: '#fb923c' },
-                    { top: 62.1, height: 8.5, rankColor: '#94a3b8' },
-                    { top: 72.4, height: 8.5, rankColor: '#94a3b8' },
-                    { top: 82.7, height: 8.5, rankColor: '#94a3b8' }
-                ];
-
-                let rowsHtml = '';
-                for (let i = 0; i < 6; i++) {
-                    const cfg = rowConfigs[i];
-                    const entry = entries && entries[i] ? entries[i] : null;
-
-                    if (entry) {
-                        const nickname = escapeHtml(entry.nickname || 'UNKNOWN PILOT');
-                        const scoreStr = String(Math.min(999999, Math.max(0, entry.score || 0))).padStart(6, '0');
-                        const aircraftIdx = entry.aircraftIndex !== undefined ? entry.aircraftIndex : 0;
-                        const aircraftCfg = (typeof AIRCRAFT_CONFIGS !== 'undefined' && AIRCRAFT_CONFIGS[aircraftIdx]) ? AIRCRAFT_CONFIGS[aircraftIdx] : { name: "Fighter 1", file: "new_model/player_default.png" };
-                        const aircraftSprite = aircraftCfg.file;
-                        const isYou = entry.isCurrentPlayer;
-
-                        // Achievement Badge determination (replacing flight medals on leaderboards)
-                        let badgeObj;
-                        if (entry.badge && typeof entry.badge === 'object' && entry.badge.file) {
-                            badgeObj = entry.badge;
-                        } else {
-                            badgeObj = {
-                                name: 'Achievement Badge',
-                                desc: 'Pilot Achievement Badge',
-                                file: 'assets/leaderboard/Achievement Badge.png'
-                            };
-                        }
-
-                        rowsHtml += `
-                        <div class="pixel-board-row shared-row ${isYou ? 'current-player' : ''}" style="position: absolute; left: 24.0%; width: 67.2%; top: ${cfg.top}%; height: ${cfg.height}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 4px; box-sizing: border-box; overflow: hidden;">
-                            <div class="row-pilot-info" style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: left; line-height: 1.15; flex: 1; min-width: 0;">
-                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; min-height: 28px; height: auto;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 13.5px; font-weight: 900; color: ${isYou ? '#38bdf8' : cfg.rankColor}; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px; line-height: 28px;">
-                                        ${nickname}
-                                    </span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 4px; margin-top: 1px;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; color: #facc15; letter-spacing: 0.06em;">
-                                        ${scoreStr} <span style="font-size: 8.5px; color: #94a3b8;">PTS</span>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="row-media-group" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 4px;">
-                                <div class="row-legend-box">${entry.hasHeldTop1 ? '<img class="player-top1-achievement-badge" src="assets/leaderboard/top1.png" alt="Top 1 Legend" title="Held Rank #1" style="width: 40px; height: 40px; max-width: 40px; max-height: 40px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.95)); flex-shrink: 0;" />' : ''}</div>
-                                ${isYou ? '<span class="row-current-label">YOU</span>' : ''}
-                                <div class="row-badge-box row-medal-box" style="width: 42px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="${escapeHtml(badgeObj.name)}: ${escapeHtml(badgeObj.desc)}">
-                                    <img src="${badgeObj.file}" alt="${escapeHtml(badgeObj.name)}" style="max-height: 40px; max-width: 40px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.75)); image-rendering: pixelated;" onerror="this.src='assets/leaderboard/Achievement Badge.png'" />
-                                </div>
-                                <div class="row-aircraft-box" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="${escapeHtml(aircraftCfg.name)}">
-                                    <img src="${aircraftSprite}" alt="${escapeHtml(aircraftCfg.name)}" style="max-height: 42px; max-width: 42px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.7));" onerror="this.src='assets/player_default.png'" />
-                                </div>
-                            </div>
-                        </div>`;
-                    } else {
-                        rowsHtml += `
-                        <div class="pixel-board-row empty-slot" style="position: absolute; left: 24.0%; width: 67.2%; top: ${cfg.top}%; height: ${cfg.height}%; display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; opacity: 0.4;">
-                            <span style="font-family: 'Orbitron', monospace; font-size: 11px; color: #64748b; letter-spacing: 0.1em;">--- STANDBY ---</span>
-                        </div>`;
-                    }
-                }
-
-                containerEl.innerHTML = `
-                <div class="records-art-board" style="position: relative; width: 100%; max-width: 494px; margin: 0 auto; aspect-ratio: 1024 / 1536;">
-                    <img src="assets/leaderboard/Sky Dominators Pixel Leaderboard.png" alt="Standings" style="width: 100%; height: 100%; display: block; object-fit: fill; pointer-events: none;" />
-                    <div style="position: absolute; inset: 0;">
-                        ${rowsHtml}
-                    </div>
-                </div>`;
-            }
-
-            static renderPersonalBoard(containerEl, records) {
-                if (!containerEl) return;
-                // Flight records with ~10px vertical gap (2.2% at ~456px board height = 10.03px)
-                const rowTops = [20.9, 33.0, 45.2, 57.5, 69.7, 82.2];
-                const rowHeight = 8.8;
-
-                let rowsHtml = '';
-                for (let i = 0; i < 6; i++) {
-                    const topPct = rowTops[i];
-                    const record = records && records[i] ? records[i] : null;
-
-                    if (record) {
-                        const dateStr = record.date || new Date().toISOString().slice(0, 10);
-                        const scoreStr = String(Math.min(999999, Math.max(0, record.score || 0))).padStart(6, '0');
-                        const targets = record.targetsCleared || 0;
-                        const aircraftIdx = record.aircraftIndex !== undefined ? record.aircraftIndex : 0;
-                        const aircraftCfg = (typeof AIRCRAFT_CONFIGS !== 'undefined' && AIRCRAFT_CONFIGS[aircraftIdx]) ? AIRCRAFT_CONFIGS[aircraftIdx] : { name: "Fighter 1", file: "new_model/player_default.png" };
-                        const aircraftSprite = aircraftCfg.file;
-
-                        // Achievement Badge determination (replacing flight medals on flight record boards)
-                        let badgeObj;
-                        if (record.badge && typeof record.badge === 'object' && record.badge.file) {
-                            badgeObj = record.badge;
-                        } else {
-                            badgeObj = {
-                                name: 'Achievement Badge',
-                                desc: 'Sortie Achievement Badge',
-                                file: 'assets/leaderboard/Achievement Badge.png'
-                            };
-                        }
-
-                        rowsHtml += `
-                        <div class="pixel-board-row personal-row" style="position: absolute; left: 23.0%; width: 64.5%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 6px; box-sizing: border-box; overflow: hidden;">
-                            <div class="row-pilot-info" style="display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: left; line-height: 1.15; flex: 1; min-width: 0;">
-                                <div class="row-name-box" style="display: flex; align-items: center; gap: 5px; min-height: 28px; height: auto;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 800; color: #38bdf8; letter-spacing: 0.05em; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 195px;">
-                                        #${i + 1} ${dateStr}
-                                    </span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 1px;">
-                                    <span style="font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 800; color: #facc15; letter-spacing: 0.06em;">
-                                        ${scoreStr} <span style="font-size: 8.5px; color: #94a3b8;">PTS</span>
-                                    </span>
-                                    <span style="font-size: 10px; color: #cbd5e1; font-weight: 700;">🎯 ${targets}</span>
-                                </div>
-                            </div>
-                            <div class="row-media-group" style="display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 4px;">
-                                <div class="row-legend-box">${(record.hasHeldTop1 || (typeof FlightLeaderboardAPI !== 'undefined' && FlightLeaderboardAPI.hasPlayerHeldTop1 && FlightLeaderboardAPI.hasPlayerHeldTop1())) ? '<img class="player-top1-achievement-badge" src="assets/leaderboard/top1.png" alt="Top 1 Legend" title="Held Rank #1" style="width: 40px; height: 40px; max-width: 40px; max-height: 40px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.95)); flex-shrink: 0;" />' : ''}</div>
-                                <div class="row-badge-box row-medal-box" style="width: 42px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="${escapeHtml(badgeObj.name)}: ${escapeHtml(badgeObj.desc)}">
-                                    <img src="${badgeObj.file}" alt="${escapeHtml(badgeObj.name)}" style="max-height: 40px; max-width: 40px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.75)); image-rendering: pixelated;" onerror="this.src='assets/leaderboard/Achievement Badge.png'" />
-                                </div>
-                                <div class="row-aircraft-box" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="${escapeHtml(aircraftCfg.name)}">
-                                    <img src="${aircraftSprite}" alt="${aircraftCfg.name}" style="max-height: 42px; max-width: 42px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(250, 204, 21, 0.7));" onerror="this.src='assets/player_default.png'" />
-                                </div>
-                            </div>
-                        </div>`;
-                    } else {
-                        rowsHtml += `
-                        <div class="pixel-board-row empty-slot" style="position: absolute; left: 23.0%; width: 64.5%; top: ${topPct}%; height: ${rowHeight}%; display: flex; align-items: center; padding: 0 8px; box-sizing: border-box; opacity: 0.4;">
-                            <span style="font-family: 'Orbitron', monospace; font-size: 11px; color: #64748b; letter-spacing: 0.1em;">--- NO TELEMETRY ---</span>
-                        </div>`;
-                    }
-                }
-
-                containerEl.innerHTML = `
-                <div class="records-art-board" style="position: relative; width: 100%; max-width: 494px; margin: 0 auto; aspect-ratio: 1 / 1;">
-                    <img src="assets/leaderboard/Pixel-Art Flight Records Board.png" alt="Flight Records" style="width: 100%; height: 100%; display: block; object-fit: fill; pointer-events: none;" />
-                    <div style="position: absolute; inset: 0;">
-                        ${rowsHtml}
-                    </div>
-                </div>`;
-            }
-        }
-        window.SkyDominatorsBoardsRenderer = SkyDominatorsBoardsRenderer;
-
-        async function refreshAllBoards() {
-            try {
-                const lbData = await leaderboardService.getTopScores(6);
-                const sharedEntries = lbData && lbData.entries ? lbData.entries : [];
-                const personalRecords = FlightRewardsManager.getPersonalRecords();
-
-                const mainLB = document.getElementById('mainMenuLeaderboardContainer');
-                if (mainLB) SkyDominatorsBoardsRenderer.renderSharedBoard(mainLB, sharedEntries);
-
-                const mainPR = document.getElementById('mainMenuPersonalRecordsContainer');
-                if (mainPR) SkyDominatorsBoardsRenderer.renderPersonalBoard(mainPR, personalRecords);
-
-                const detLB = document.getElementById('detailedLeaderboardContainer');
-                if (detLB) SkyDominatorsBoardsRenderer.renderSharedBoard(detLB, sharedEntries);
-
-                const detPR = document.getElementById('detailedPersonalRecordsContainer');
-                if (detPR) SkyDominatorsBoardsRenderer.renderPersonalBoard(detPR, personalRecords);
-            } catch (err) {
-                console.error("Board render error:", err);
-            }
-        }
-        window.refreshAllBoards = refreshAllBoards;
-
-        function renderMenuAwardCollection(container, awards, category) {
-            if (!container) return;
-            container.replaceChildren();
-            const seen = new Set();
-            for (const award of awards) {
-                if (!award || !award.file || seen.has(award.file)) continue;
-                seen.add(award.file);
-                const img = document.createElement('img');
-                img.className = category === 'medal' ? 'menu-medal' : 'menu-secondary-badge';
-                img.src = award.file;
-                img.alt = award.name || (category === 'medal' ? 'Flight medal' : 'Achievement badge');
-                container.appendChild(img);
-                break; // One genuine award per side; never render filler artwork.
-            }
-        }
-
-        function getMainMenuMedals() {
-            // Legacy saves have no unlock dates. Flight milestones are earned in order.
-            const flights = FlightRewardsManager.getCompletedFlights();
-            return flights >= 10 ? [FlightRewardsManager.getActiveMedal(flights)] : [];
-        }
-
-        function refreshMainMenuView() {
-            renderMenuAwardCollection(document.getElementById('mainMenuMedals'), getMainMenuMedals(), 'medal');
-            const callsignInput = document.getElementById('mainMenuCallsignInput');
-            if (callsignInput) {
-                callsignInput.value = leaderboardService.getPlayerNickname();
-            }
-
-            // Update pilot callsign inside TAKE OFF button
-            const pilotCallsign = document.getElementById('takeOffPilotCallsign');
-            if (pilotCallsign) {
-                pilotCallsign.textContent = leaderboardService.getPlayerNickname() || 'PILOT-01';
-            }
-
-            const achievements = FlightRewardsManager.getAchievements();
-            const badgeImgCenter = document.getElementById('badgeImgCenter');
-            if (badgeImgCenter) {
-                badgeImgCenter.classList.toggle('sky-legend-locked-glitch', !achievements.top1);
-                badgeImgCenter.alt = achievements.top1 ? 'Sky Legend' : 'Sky Legend locked';
-            }
-            // Top 10 is the existing earned non-Legend badge; generic artwork has no ownership flag.
-            const secondaryBadges = [];
-            if (achievements.top10) secondaryBadges.push({ name: 'Top 10 Pilot', file: 'assets/leaderboard/top 10 enter.png' });
-            if (!window.Ranked) renderMenuAwardCollection(document.getElementById('mainMenuSecondaryBadges'), [], 'badge');
-
-            // Legacy backward-compatibility handles
-            const slotTop1 = document.getElementById('badgeSlotTop1');
-            const slotTop10 = document.getElementById('badgeSlotTop10');
-            if (slotTop1) slotTop1.style.display = achievements.top1 ? 'flex' : 'none';
-            if (slotTop10) slotTop10.style.display = achievements.top10 ? 'flex' : 'none';
-
-            refreshAllBoards();
-            if (window.Ranked) Ranked.render();
-        }
-        window.refreshMainMenuView = refreshMainMenuView;
-
-        async function showDetailedRecordsScreen() {
+        const leaderboardService={getPlayerNickname:()=>SkyProfile.name,setPlayerNickname:value=>SkyProfile.setName(value)};
+        function refreshAllBoards(){return window.SkyUI?.refreshBoards();}
+        function refreshMainMenuView(){SkyProfile.syncIdentity();if(window.SkyUI){SkyUI.render();void SkyUI.refreshBoards();}}
+        function showDetailedRecordsScreen(){
             document.getElementById('gameOverOverlay')?.classList.add('hidden');
             document.getElementById('detailedRecordsOverlay')?.classList.remove('hidden');
-            await refreshAllBoards();
+            void refreshAllBoards();
         }
-        window.showDetailedRecordsScreen = showDetailedRecordsScreen;
-
-        async function openLeaderboardModal() {
-            audio.init();
-            const modal = document.getElementById('leaderboardModal');
-            if (!modal) return;
-
-            const callsignInput = document.getElementById('leaderboardCallsignInput');
-            if (callsignInput) {
-                callsignInput.value = leaderboardService.getPlayerNickname();
-            }
-
-            modal.classList.remove('hidden');
-            await refreshLeaderboardUI();
-        }
-
-        function closeLeaderboardModal() {
-            document.getElementById('leaderboardModal')?.classList.add('hidden');
-        }
-
-        async function refreshLeaderboardUI() {
-            const listEl = document.getElementById('leaderboardList');
-            const loadingEl = document.getElementById('leaderboardLoadingState');
-            const emptyEl = document.getElementById('leaderboardEmptyState');
-            const errorEl = document.getElementById('leaderboardErrorState');
-            const bannerEl = document.getElementById('leaderboardStatusBanner');
-            const bannerText = document.getElementById('leaderboardStatusText');
-
-            if (!listEl) return;
-
-            loadingEl?.classList.remove('hidden');
-            emptyEl?.classList.add('hidden');
-            errorEl?.classList.add('hidden');
-            listEl.innerHTML = '';
-
-            try {
-                const data = await leaderboardService.getTopScores(10);
-                loadingEl?.classList.add('hidden');
-
-                if (bannerEl && bannerText) {
-                    if (data.isConfigured) {
-                        bannerEl.className = 'leaderboard-status-banner online';
-                        bannerText.textContent = 'CLOUD NETWORK ONLINE (FIREBASE)';
-                    } else {
-                        bannerEl.className = 'leaderboard-status-banner demo';
-                        bannerText.textContent = 'LOCAL DEMO MODE (FIREBASE OFFLINE / BACKUP)';
-                    }
-                }
-
-                if (!data.entries || data.entries.length === 0) {
-                    emptyEl?.classList.remove('hidden');
-                    return;
-                }
-
-                listEl.innerHTML = '';
-                data.entries.forEach(entry => {
-                    const row = document.createElement('div');
-                    row.className = `leaderboard-row ${entry.isCurrentPlayer ? 'current-player' : ''}`;
-
-                    let rankClass = '';
-                    if (entry.rank === 1) rankClass = 'rank-1';
-                    else if (entry.rank === 2) rankClass = 'rank-2';
-                    else if (entry.rank === 3) rankClass = 'rank-3';
-
-                    const youBadge = entry.isCurrentPlayer ? `<span style="font-size: 7.5px; background: #0284c7; color: white; padding: 1px 4px; border-radius: 2px; font-weight: 700;">YOU</span>` : '';
-                    const demoBadge = entry.isDemo ? `<span style="font-size: 7.5px; color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); padding: 0 3px; border-radius: 2px;">DEMO</span>` : '';
-
-                    row.innerHTML = `
-                        <span class="rank-badge ${rankClass}">#${entry.rank}</span>
-                        <span class="player-cell">${escapeHtml(entry.nickname)} ${youBadge} ${demoBadge}</span>
-                        <span class="score-cell">${Number(entry.score).toLocaleString()}</span>
-                        <span class="date-cell">${entry.date || '—'}</span>
-                    `;
-                    listEl.appendChild(row);
-                });
-            } catch (err) {
-                console.error("Leaderboard display error:", err);
-                loadingEl?.classList.add('hidden');
-                errorEl?.classList.remove('hidden');
-            }
-        }
-
-        window.openLeaderboardModal = openLeaderboardModal;
-        window.closeLeaderboardModal = closeLeaderboardModal;
-        window.refreshLeaderboardUI = refreshLeaderboardUI;
+        function openLeaderboardModal(){audio.init();document.getElementById('leaderboardModal')?.classList.remove('hidden');return refreshLeaderboardUI();}
+        function closeLeaderboardModal(){document.getElementById('leaderboardModal')?.classList.add('hidden');}
+        function refreshLeaderboardUI(){return window.SkyUI?.refreshBoards(true);}
+        Object.assign(window,{refreshAllBoards,refreshMainMenuView,showDetailedRecordsScreen,openLeaderboardModal,closeLeaderboardModal,refreshLeaderboardUI});
 
         // =========================================================================
         // REQUIREMENT 2, 3, 4, 5, 6, 7: TACTICAL HANGAR & AIRCRAFT PRESENTATION
@@ -7520,26 +6059,7 @@
             }
         }
 
-        function selectHangarAircraft(idx) {
-            inspectedSkin = null;
-            if (!isAircraftUnlocked(idx)) {
-                const toast = document.getElementById('aircraftLockNotice');
-                if (toast) { toast.textContent = 'Quà tặng nạp lần đầu'; toast.hidden = false; }
-            } else { const toast = document.getElementById('aircraftLockNotice'); if (toast) toast.hidden = true; }
-            if (!Number.isInteger(idx) || idx < 0 || idx >= AIRCRAFT_CONFIGS.length) return false;
-            selectedHangarIndex = idx;
-            // Inspecting locked models must not overwrite the equipped or saved aircraft.
-            if (isAircraftUnlocked(idx)) {
-                if (gameState === 'START') player.setAircraft(idx);
-                else if (gameState === 'GAMEOVER') {
-                    nextMatchAircraftIndex = idx;
-                    player.setAircraft(idx);
-                }
-                try { localStorage.setItem('air_strike_selected_aircraft', String(idx)); } catch (e) {}
-            }
-            updateHangarModalUI();
-            return true;
-        }
+        function selectHangarAircraft(idx) {return SkyUI.selectAircraft(idx);}
 
         function getHangarAircraftOrder() {
             const bottom = ['titan', 'phantom_prototype'];
@@ -7548,80 +6068,7 @@
                 .concat(bottom.map(key => AIRCRAFT_CONFIGS.findIndex(cfg => cfg.key === key)).filter(index => index >= 0));
         }
 
-        function updateHangarModalUI() {
-            const cfg = AIRCRAFT_CONFIGS[selectedHangarIndex] || AIRCRAFT_CONFIGS[0];
-            const unlocked = isAircraftUnlocked(selectedHangarIndex);
-            const equipped = AircraftSkinManager.getEquippedSkinFor(cfg.key);
-            const bigImg = document.getElementById('hangarAircraftBigImg');
-            if (bigImg) { bigImg.src = equipped ? equipped.file : cfg.file; bigImg.alt = cfg.name; }
-            document.getElementById('hangarAircraftName').textContent = cfg.name;
-            document.getElementById('hangarClassName').textContent = cfg.title;
-            document.getElementById('hangarUnlockStatus').textContent = unlocked ? 'READY' : 'REQUIRES ' + (window.Ranked?.requirement(cfg.key) || 'SPECIAL UNLOCK').toUpperCase();
-            document.getElementById('hangarActiveSkinName').textContent = equipped ? 'SKIN: ' + equipped.name : '';
-            document.getElementById('hangarDamageNumber').textContent = cfg.damagePerShot || 1;
-            const health = document.getElementById('hangarHealthBar');
-            health.replaceChildren();
-            health.setAttribute('aria-label', cfg.maxHp + ' HP');
-            for (let i = 0; i < cfg.maxHp; i++) {
-                const block = document.createElement('span'); block.className = 'health-block-hp'; health.appendChild(block);
-            }
-            const desc = document.getElementById('hangarDescList'); desc.replaceChildren();
-            for (const text of cfg.descriptions || []) { const li = document.createElement('li'); li.textContent = text; desc.appendChild(li); }
-            const confirm = document.getElementById('hangarConfirmBtn');
-            confirm.disabled = !unlocked || isAlternativeSkinInspected();
-            confirm.style.fontFamily = isAlternativeSkinInspected() ? 'Arial, sans-serif' : '';
-            confirm.textContent = isAlternativeSkinInspected() ? 'SKIN LOCKED' : unlocked ? 'CONFIRM AIRCRAFT SELECTION' : 'LOCKED — ' + (window.Ranked?.requirement(cfg.key) || 'SPECIAL UNLOCK').toUpperCase();
-
-            const skins = AircraftSkinManager.getSkinsForAircraft(cfg.key);
-            const skinList = document.getElementById('hangarSkinThumbnails'); skinList.replaceChildren();
-            document.getElementById('hangarSkinCount').textContent = skins.length;
-            document.getElementById('hangarActiveSkinLabel').textContent = skins.length ? 'EQUIPPED' : '';
-            if (skins.length === 0) {
-                for (let i = 0; i < 10; i++) {
-                    const slot = document.createElement('button');
-                    slot.type = 'button'; slot.disabled = true; slot.tabIndex = -1;
-                    slot.className = 'skin-placeholder'; slot.setAttribute('aria-disabled', 'true');
-                    slot.setAttribute('aria-label', 'Locked skin placeholder');
-                    const silhouette = document.createElement('img'); silhouette.src = cfg.file; silhouette.alt = '';
-                    slot.appendChild(silhouette);
-                    slot.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M6 10V7a6 6 0 0 1 12 0v3h2v12H4V10h2zm3 0h6V7a3 3 0 0 0-6 0v3zm2 4v4h2v-4h-2z"/></svg>');
-                    skinList.appendChild(slot);
-                }
-            } else {
-                for (const skin of skins) {
-                    const card = document.createElement('button'); card.type = 'button';
-                    card.className = 'hangar-skin-card' + (!skin.isDefault ? ' skin-locked' : '') + (inspectedSkin?.id === skin.id ? ' is-inspected' : '') + (equipped && equipped.id === skin.id ? ' is-equipped' : '');
-                    card.dataset.skinId = skin.id; card.title = skin.name + ' (' + cfg.name + ')';
-                    card.setAttribute('aria-pressed', String(!!equipped && equipped.id === skin.id));
-                    const img = document.createElement('img'); img.className = 'hangar-skin-thumb-img'; img.src = skin.file; img.alt = skin.name;
-                    const name = document.createElement('span'); name.className = 'hangar-skin-name-lbl'; name.textContent = skin.name + (!skin.isDefault ? ' · LOCKED' : '');
-                    card.append(img, name);
-                    card.addEventListener('click', () => {
-                        inspectedSkin = {key: cfg.key, id: skin.id};
-                        if (skin.isDefault) AircraftSkinManager.setEquippedSkin(cfg.key, skin.id);
-                        if (player.aircraftIndex === selectedHangarIndex) player.applySkinForAircraft();
-                        updateHangarModalUI();
-                    });
-                    skinList.appendChild(card);
-                }
-            }
-            const list = document.getElementById('hangarThumbnailList'); const scroll = list.scrollTop; list.replaceChildren();
-            for (const index of getHangarAircraftOrder()) {
-                const itemCfg = AIRCRAFT_CONFIGS[index], owned = isAircraftUnlocked(index);
-                const item = document.createElement('button'); item.type = 'button';
-                item.className = 'hangar-thumb-item' + (index === selectedHangarIndex ? ' is-selected' : '') + (!owned ? ' is-locked' : '');
-                item.dataset.index = index; item.dataset.locked = !owned;
-                item.setAttribute('aria-pressed', String(index === selectedHangarIndex));
-                const img = document.createElement('img'); img.className = 'hangar-thumb-img'; img.src = itemCfg.file; img.alt = '';
-                const copy = document.createElement('span'), name = document.createElement('span'), status = document.createElement('span');
-                name.className = 'hangar-card-name'; name.textContent = itemCfg.name;
-                status.className = 'hangar-card-status'; status.textContent = owned ? itemCfg.title : '🔒 ' + (window.Ranked?.requirement(itemCfg.key) || 'SPECIAL UNLOCK').toUpperCase();
-                copy.append(name, status); item.append(img, copy);
-                item.addEventListener('click', () => selectHangarAircraft(index)); list.appendChild(item);
-            }
-            list.scrollTop = scroll;
-            syncSkinSelectionUI();
-        }
+        function updateHangarModalUI() {if(window.SkyUI)SkyUI.renderHangar();}
 
         function updateAircraftUI() {
             updateHangarModalUI();
@@ -7632,10 +6079,6 @@
         window.selectHangarAircraft = selectHangarAircraft;
         window.updateHangarModalUI = updateHangarModalUI;
         window.updateAircraftUI = updateAircraftUI;
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'air_strike_unlocked_aircraft' || e.key === 'air_strike_equipped_skins') updateHangarModalUI();
-        });
-
         function handleCanvasMouseMove(e) {
             if (touchDestination.active || e.sourceCapabilities?.firesTouchEvents) return;
             const coords = getCanvasCoordinates(e);
@@ -7732,27 +6175,24 @@
             e.stopPropagation();
             e.preventDefault();
             const current = leaderboardService.getPlayerNickname() || 'PILOT-01';
-            const input = window.prompt("Enter pilot callsign (max 16 chars):", current);
+            const input = window.prompt("Enter pilot name (max 80 characters):", current);
             if (input !== null) {
-                const cleaned = input.trim().slice(0, 16);
+                const cleaned = input.trim().slice(0, 80);
                 if (cleaned) {
-                    leaderboardService.setPlayerNickname(cleaned);
+                    await leaderboardService.setPlayerNickname(cleaned);
                     refreshMainMenuView();
                 }
             }
         };
-        document.getElementById('takeOffPilotCallsign')?.addEventListener('click', handleTakeOffCallsignEdit);
         document.getElementById('takeOffEditPencil')?.addEventListener('click', handleTakeOffCallsignEdit);
 
         // Start Button on Main Menu: Navigates to Tactical Hangar Flow
         document.getElementById('startBtn')?.addEventListener('click', () => {
-            if (isAlternativeSkinInspected()) return;
             audio.init();
             document.getElementById('startOverlay')?.classList.add('hidden');
             openHangarModal();
         });
 
-        document.getElementById('chooseDefaultSkinBtn')?.addEventListener('click', () => openHangarModal());
 
         // Main Menu Callsign quick edit
         const mainMenuCallsignInput = document.getElementById('mainMenuCallsignInput');
@@ -7780,7 +6220,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 audio.init();
-                showDetailedRecordsScreen();
+                SkyUI.leaveResult();
             });
         }
 
@@ -7862,16 +6302,7 @@
             closeHangarModal();
         });
 
-        document.getElementById('hangarConfirmBtn')?.addEventListener('click', () => {
-            if (isAlternativeSkinInspected()) return;
-            if (!isAircraftUnlocked(selectedHangarIndex)) return;
-            if (!player.setAircraft(selectedHangarIndex)) return;
-            try { localStorage.setItem('air_strike_selected_aircraft', String(selectedHangarIndex)); } catch (e) {}
-            closeHangarModal();
-            if (hangarPrevGameState === 'START') {
-                resetGame();
-            }
-        });
+        document.getElementById('hangarConfirmBtn')?.addEventListener('click',()=>void SkyUI.confirmHangar());
 
         // In-game tactical skill button click & touch handlers
         const inGameSkillBtn = document.getElementById('inGameSkillBtn');
@@ -7907,8 +6338,9 @@
         // Always returns strictly to Sky Dominators Start Screen (Never redirects to Hub)
         // =========================================================================
         function returnToSkyMainMenu(e) {
+            player.boostTimer=0;bossEncounter.abort();suspendedBossRows=[];SkySkins.clear();document.getElementById('dangerHUDContainer').style.visibility='';
             player.endSquadron();
-            if (window.Ranked) Ranked.toNormal();
+            SkyUI.stopPromotion();
             if (e && typeof e.preventDefault === 'function') e.preventDefault();
             if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
             try {
@@ -8005,7 +6437,7 @@
             requestAnimationFrame(gameLoop);
         });
     </script>
-    <script src="ranked/direct-firestore.js?v=2026-10-26-ranked-firestore-1"></script>
-    <script src="ranked/ranked.js?v=2026-10-26-ranked-firestore-1"></script>
+    <script src="progress/ui.js?v=2026-10-28-skin-feedback-2"></script>
 </body>
 </html>
+

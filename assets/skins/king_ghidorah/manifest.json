@@ -1,0 +1,288 @@
+{
+  "frameSize": [
+    448,
+    256
+  ],
+  "frames": 12,
+  "columns": 4,
+  "rows": 3,
+  "order": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "frameMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "source": "Existing six frames interleaved with six new built-in ImageGen wing inbetweens",
+  "processing": "New wing art uses one shared uniform 0.63 nearest-neighbor scale; source central 100px strip retained pixel-exact. Original six complete frames preserved unchanged at even zero-based indices.",
+  "mouths": "Closed in every pose",
+  "minimumPadding": 20,
+  "maskContained": true,
+  "gameModified": true,
+  "lightningRevision": "12-frame revision: original lightning masks synchronized and clipped to new intermediate silhouettes; 100ms/frame.",
+  "lightningVisibleFrames": [
+    2,
+    3,
+    6,
+    7,
+    10,
+    11
+  ],
+  "flightFps": 10,
+  "sequences": {
+    "flight_12": [
+      "flight_12/frame_01.png",
+      "flight_12/frame_02.png",
+      "flight_12/frame_03.png",
+      "flight_12/frame_04.png",
+      "flight_12/frame_05.png",
+      "flight_12/frame_06.png",
+      "flight_12/frame_07.png",
+      "flight_12/frame_08.png",
+      "flight_12/frame_09.png",
+      "flight_12/frame_10.png",
+      "flight_12/frame_11.png",
+      "flight_12/frame_12.png"
+    ],
+    "lightning_12": [
+      "lightning_12/frame_01.png",
+      "lightning_12/frame_02.png",
+      "lightning_12/frame_03.png",
+      "lightning_12/frame_04.png",
+      "lightning_12/frame_05.png",
+      "lightning_12/frame_06.png",
+      "lightning_12/frame_07.png",
+      "lightning_12/frame_08.png",
+      "lightning_12/frame_09.png",
+      "lightning_12/frame_10.png",
+      "lightning_12/frame_11.png",
+      "lightning_12/frame_12.png"
+    ],
+    "preview_12": [
+      "preview_12/frame_01.png",
+      "preview_12/frame_02.png",
+      "preview_12/frame_03.png",
+      "preview_12/frame_04.png",
+      "preview_12/frame_05.png",
+      "preview_12/frame_06.png",
+      "preview_12/frame_07.png",
+      "preview_12/frame_08.png",
+      "preview_12/frame_09.png",
+      "preview_12/frame_10.png",
+      "preview_12/frame_11.png",
+      "preview_12/frame_12.png"
+    ]
+  },
+  "originalSourceStats": [
+    {
+      "frame": 0,
+      "sourceBounds": [
+        121,
+        3,
+        402,
+        351
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 249
+    },
+    {
+      "frame": 1,
+      "sourceBounds": [
+        700,
+        3,
+        636,
+        350
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 249
+    },
+    {
+      "frame": 2,
+      "sourceBounds": [
+        1378,
+        3,
+        655,
+        351
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 178
+    },
+    {
+      "frame": 3,
+      "sourceBounds": [
+        46,
+        388,
+        553,
+        353
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 209
+    },
+    {
+      "frame": 4,
+      "sourceBounds": [
+        687,
+        389,
+        661,
+        351
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 181
+    },
+    {
+      "frame": 5,
+      "sourceBounds": [
+        1502,
+        389,
+        420,
+        350
+      ],
+      "uniformScale": 0.5892351274787535,
+      "lightningPixels": 149
+    }
+  ],
+  "stats": [
+    {
+      "frame": 0,
+      "bounds": [
+        107,
+        21,
+        344,
+        227
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 1,
+      "bounds": [
+        78,
+        21,
+        372,
+        227
+      ],
+      "original_preserved": false
+    },
+    {
+      "frame": 2,
+      "bounds": [
+        38,
+        21,
+        413,
+        227
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 3,
+      "bounds": [
+        37,
+        21,
+        413,
+        227
+      ],
+      "original_preserved": false
+    },
+    {
+      "frame": 4,
+      "bounds": [
+        28,
+        20,
+        414,
+        227
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 5,
+      "bounds": [
+        27,
+        20,
+        419,
+        227
+      ],
+      "original_preserved": false
+    },
+    {
+      "frame": 6,
+      "bounds": [
+        62,
+        21,
+        388,
+        228
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 7,
+      "bounds": [
+        41,
+        21,
+        408,
+        228
+      ],
+      "original_preserved": false
+    },
+    {
+      "frame": 8,
+      "bounds": [
+        31,
+        20,
+        420,
+        227
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 9,
+      "bounds": [
+        61,
+        20,
+        389,
+        227
+      ],
+      "original_preserved": false
+    },
+    {
+      "frame": 10,
+      "bounds": [
+        102,
+        20,
+        349,
+        227
+      ],
+      "original_preserved": true
+    },
+    {
+      "frame": 11,
+      "bounds": [
+        71,
+        20,
+        370,
+        227
+      ],
+      "original_preserved": false
+    }
+  ]
+}
