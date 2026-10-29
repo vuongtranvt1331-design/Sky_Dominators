@@ -383,7 +383,7 @@ const MODEL={
   ]
 }
 ;
-const CONFIG=Object.freeze({intro:2000,laneWarning:1250,laneGap:450,lanePeriod:2000,droneDeployGap:450,droneDeployTime:650,droneShotGap:2000,droneTurnRate:.38,droneSpeed:175,componentHits:3,turretPeriod:2400,coreFailureEnd:650,collapseStart:2900,detonationStart:4400,defeatEnd:6300,victoryHold:800});
+const CONFIG=Object.freeze({intro:2000,laneWarning:1000,laneWarningStep:100,laneWarningMin:600,laneCount:4,lanePeriod:2000,droneDeployGap:450,droneDeployTime:650,droneShotGap:2000,droneWarning:1000,droneTurnRate:.38,droneSpeed:175,droneSpeedScale:1/3,componentHits:3,turretPeriod:2400,coreFailureEnd:650,collapseStart:2900,detonationStart:4400,defeatEnd:6300,victoryHold:800});
 const PHASE=Object.freeze({LANES:'lanes',DRONES:'drones',ROTORS:'rotors',TURRETS:'turrets',CORE:'core',FAILURE:'core_failure',CHAIN:'chain_explosions',COLLAPSE:'collapse',DETONATION:'detonation',FINISHED:'finished'});
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),ease=t=>1-Math.pow(1-clamp(t,0,1),3);
 const assetKey=file=>file.replace('sky_fortress_','').replace('.png','');
@@ -457,7 +457,7 @@ class Encounter{
    if(t===this.core&&this.b.hp===0)this.beginDefeat(a);
   }else{
    t.hp=Math.max(0,t.hp-1);if(t.kind==='drone'&&t.hp>0){t.artKey=t.hp<3?'drone_damaged':'drone';this.setBox(t);}
-   if(t.hp===0){t.active=false;t.destroyed=true;t.destroyedAngle=t.angle;this.d.shots=this.d.shots.filter(s=>s.sourceId!==t.id);this.d.burst=this.d.burst.filter(s=>s.sourceId!==t.id);this.d.h.localExplosion?.(t,a);
+   if(t.hp===0){t.active=false;t.destroyed=true;t.destroyedAngle=t.angle;this.d.shots=this.d.shots.filter(s=>s.sourceId!==t.id);this.d.warnings=this.d.warnings.filter(s=>s.sourceId!==t.id);this.d.burst=this.d.burst.filter(s=>s.sourceId!==t.id);this.d.h.localExplosion?.(t,a);
     if(t.kind==='drone'){this.b.hp=Math.max(100,this.b.hp-40);this.b.remainingDrones=this.remainingDrones;if(this.remainingDrones===0&&this.b.hp===100)this.setPhase(PHASE.ROTORS);}
     else if(t.kind==='rotor'&&!this.components.some(c=>c.kind==='rotor'&&c.active))this.setPhase(PHASE.TURRETS);
     else if(t.kind==='turret'&&!this.components.some(c=>c.kind==='turret'&&c.active))this.setPhase(PHASE.CORE);
@@ -474,17 +474,62 @@ class Encounter{
    if(this.d.phase!=='fight')return;
   }
  }
- queueLaneVolley(){const {w}=this.d.h.context();for(let i=0;i<3;i++)this.d.warnings.push({lane:i,targetX:w*[.2,.5,.8][i],age:-i*CONFIG.laneGap,duration:CONFIG.laneWarning});this.volley++;}
- launchMissile(x,y,angle,guided,sourceId){const speed=this.d.constructor.missileSpeed((guided?CONFIG.droneSpeed:205)*1.5);this.d.shots.push({kind:'missile',x,y,px:x,py:y,angle,speed,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,guided,sourceId,age:0});this.d.h.launch?.();}
+ queueLaneVolley(){
+  // One turn is one volley, not a frame or one of its four trajectories.
+  const duration=Math.max(CONFIG.laneWarningMin,CONFIG.laneWarning-this.volley*CONFIG.laneWarningStep);
+  const rotation=Math.random()*Math.PI*2,sector=Math.PI*2/CONFIG.laneCount;
+  for(let lane=0;lane<CONFIG.laneCount;lane++){
+   // Stratified random directions keep four distinct rays, including with a seeded RNG.
+   const angle=(rotation+(lane+.15+Math.random()*.7)*sector)%(Math.PI*2);
+   this.d.warnings.push({kind:'lane',lane,angle,age:0,duration,sourceId:'carrier'});
+  }
+  this.volley++;
+ }
+ warningOrigin(warning){
+  if(warning.kind==='drone'){
+   const drone=this.drones.find(x=>x.id===warning.sourceId&&x.active&&x.deployed&&x.hp>0);
+   return this.state===PHASE.DRONES&&drone?{x:drone.x,y:drone.y+drone.height*.45}:null;
+  }
+  return this.state===PHASE.LANES?this.world(MODEL.instances.find(i=>i.id==='launch_bay').attachment):null;
+ }
+ launchMissile(x,y,angle,guided,sourceId){
+  // Apply the reduction after the existing global missile-speed multiplier.
+  const speed=this.d.constructor.missileSpeed((guided?CONFIG.droneSpeed:205)*1.5)*(guided?CONFIG.droneSpeedScale:1);
+  this.d.shots.push({kind:'missile',x,y,px:x,py:y,angle,speed,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,guided,sourceId,age:0});this.d.h.launch?.();
+ }
+ queueDroneWarning(){
+  for(let n=0;n<this.drones.length;n++){
+   const index=(this.droneCursor+n)%this.drones.length,drone=this.drones[index];
+   if(!drone.active||!drone.deployed||drone.hp<=0)continue;
+   const {player}=this.d.h.context();
+   this.d.warnings.push({kind:'drone',sourceId:drone.id,targetX:player.x,targetY:player.y,age:0,duration:CONFIG.droneWarning});
+   this.droneCursor=(index+1)%this.drones.length;break;
+  }
+ }
  updateDrones(dt){
   const {w,h}=this.d.h.context(),origin=this.world(MODEL.instances.find(i=>i.id==='launch_bay').attachment);
   for(const drone of this.drones){if(drone.hp<=0)continue;const t=(this.phaseAge-drone.spawnAt)/CONFIG.droneDeployTime;if(t<0)continue;drone.active=true;drone.deployed=t>=1;const endX=w*(drone.index+1)/6,endY=Math.min(h-100,this.b.y+256*this.baseScale*.61);drone.x=origin.x+(endX-origin.x)*ease(t);drone.y=origin.y+(endY-origin.y)*ease(t);if(drone.deployed)drone.x+=Math.sin((this.age+drone.index*300)/700)*7;drone.scale=this.baseScale;drone.angle=Math.PI;this.setBox(drone);}
   this.droneClock+=dt;
-  while(this.droneClock>=CONFIG.droneShotGap){this.droneClock-=CONFIG.droneShotGap;for(let n=0;n<5;n++){const index=(this.droneCursor+n)%5,drone=this.drones[index];if(!drone.active||!drone.deployed)continue;const {player}=this.d.h.context();this.launchMissile(drone.x,drone.y+drone.height*.45,Math.atan2(player.y-drone.y,player.x-drone.x),true,drone.id);this.droneCursor=(index+1)%5;break;}}
+
  }
  updateWeapons(dt){
   const {player,h}=this.d.h.context();
-  for(let i=0;i<this.d.warnings.length;){const warning=this.d.warnings[i];warning.age+=dt;if(warning.age>=warning.duration){const q=this.world(MODEL.instances.find(x=>x.id==='launch_bay').attachment);this.launchMissile(q.x,q.y,Math.atan2(h+40-q.y,warning.targetX-q.x),false,'carrier');this.d.warnings.splice(i,1);}else i++;}
+  for(let i=0;i<this.d.warnings.length;){
+   const warning=this.d.warnings[i],q=this.warningOrigin(warning);
+   if(!q){this.d.warnings.splice(i,1);continue;}
+   warning.age+=dt;
+   if(warning.age<warning.duration){i++;continue;}
+   if(warning.kind==='drone'){
+    this.launchMissile(q.x,q.y,Math.atan2(warning.targetY-q.y,warning.targetX-q.x),true,warning.sourceId);
+   }else{
+    const {angle,sourceId}=warning,speed=this.d.constructor.missileSpeed(205*1.5);
+    this.d.shots.push({kind:'bullet',x:q.x,y:q.y,px:q.x,py:q.y,angle,speed,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,sourceId,age:0});
+    if(warning.lane===0)this.d.h.gun?.();
+   }
+   this.d.warnings.splice(i,1);
+  }
+  // Queue after aging existing warnings, so no new charge loses its first update slice.
+  if(this.state===PHASE.DRONES)while(this.droneClock>=CONFIG.droneShotGap){this.droneClock-=CONFIG.droneShotGap;this.queueDroneWarning();}
   if(this.state===PHASE.LANES){this.laneClock+=dt;if(this.laneClock>=CONFIG.lanePeriod){this.laneClock-=CONFIG.lanePeriod;this.queueLaneVolley();}}
   if(this.state===PHASE.ROTORS||this.state===PHASE.TURRETS){this.turretClock+=dt;if(this.turretClock>=CONFIG.turretPeriod){this.turretClock-=CONFIG.turretPeriod;this.components.filter(c=>c.kind==='turret'&&c.active).forEach((c,i)=>this.d.burst.push({sourceId:c.id,delay:i*220}));}}
   for(let i=0;i<this.d.burst.length;){const shot=this.d.burst[i];shot.delay-=dt;if(shot.delay<=0){const gun=this.components.find(c=>c.id===shot.sourceId&&c.active);if(gun){const angle=Math.atan2(player.y-gun.y,player.x-gun.x),x=gun.x+Math.cos(angle)*gun.height*.55,y=gun.y+Math.sin(angle)*gun.height*.55;for(const spread of[-.30,-.18,-.06,.06,.18,.30])this.d.shots.push({kind:'bullet',x,y,px:x,py:y,vx:Math.cos(angle+spread)*180,vy:Math.sin(angle+spread)*180,angle:angle+spread,age:0,sourceId:gun.id});this.d.h.gun?.();}this.d.burst.splice(i,1);}else i++;}
@@ -525,7 +570,14 @@ class Encounter{
  drawGlow(ctx,target,color){const q=target.fortressVisualBox;ctx.save();ctx.strokeStyle=color;ctx.globalAlpha=.65+.3*Math.sin(this.age/130);ctx.lineWidth=2;ctx.strokeRect(q.x-q.w/2-3,q.y-q.h/2-3,q.w+6,q.h+6);ctx.restore();}
  draw(ctx,art){
   const b=this.b,{w,h}=this.d.h.context();ctx.save();ctx.imageSmoothingEnabled=false;
-  for(const warning of this.d.warnings){if(warning.age<0)continue;const q=this.world(MODEL.instances.find(i=>i.id==='launch_bay').attachment);ctx.save();ctx.strokeStyle='#fb4545';ctx.globalAlpha=.12+.18*Math.abs(Math.sin(warning.age/100));ctx.lineWidth=w*.07;ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(warning.targetX,h);ctx.stroke();ctx.globalAlpha=.8;ctx.lineWidth=2;ctx.setLineDash([8,7]);ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(warning.targetX,h);ctx.stroke();ctx.restore();}
+  for(const warning of this.d.warnings){
+   const q=this.warningOrigin(warning);if(!q)continue;
+   const angle=warning.kind==='drone'?Math.atan2(warning.targetY-q.y,warning.targetX-q.x):warning.angle;
+   const length=Math.hypot(w,h)*2,x=q.x+Math.cos(angle)*length,y=q.y+Math.sin(angle)*length;
+   ctx.save();ctx.strokeStyle='#fb4545';ctx.globalAlpha=.12+.18*Math.abs(Math.sin(warning.age/100));ctx.lineWidth=warning.kind==='drone'?w*.025:w*.07;
+   ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(x,y);ctx.stroke();ctx.globalAlpha=.8;ctx.lineWidth=2;ctx.setLineDash([8,7]);
+   ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(x,y);ctx.stroke();ctx.restore();
+  }
   const visible=this.d.phase!=='victory'&&this.defeatAge<CONFIG.detonationStart+1500;
   if(visible){const alpha=this.d.phase==='defeat'&&this.defeatAge>=CONFIG.detonationStart?1-ease((this.defeatAge-CONFIG.detonationStart)/1500):1;
    this.drawPart(ctx,art,b,'hull',alpha);
