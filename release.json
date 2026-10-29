@@ -1,10 +1,28 @@
 {
-  "version": "2026-10-26-ranked-firestore-1",
-  "gameUrl": "https://vuongtranvt1331-design.github.io/Sky_Dominators/",
-  "hubUrl": "https://vuongtranvt1331-design.github.io/Arcadehub/",
-  "firebaseProject": "skydominators",
-  "rankedStorage": "direct-firestore",
-  "cloudFunctionsRequired": false,
-  "teacherDashboardIncluded": false,
-  "temporaryAircraftTesting": true
+  "release": "2026-10-28-round36-1",
+  "baselineCommit": "29ee8fcba1ebf6721ad10df82ceb0d2557d8ed6a",
+  "entrypoint": "index.html",
+  "progressSchema": 2,
+  "rankArtwork": "assets/rank-progress/",
+  "vocabulary": "LexicalSpaceDB / Arcade Hub; built-in offline fallback",
+  "deployment": "GitHub Pages static files; existing Firestore rules unchanged",
+  "skinArtwork": "assets/skins/",
+  "bossArtwork": "assets/bosses/",
+  "skinCatalog": "skins/catalog.js",
+  "skinConfiguration": [
+    "skins/red-wraith-config.js",
+    "skins/elder-wood-config.js"
+  ],
+  "bossStages": [
+    12,
+    24,
+    36
+  ],
+  "round36Boss": {
+    "module": "combat/sky-fortress.js",
+    "assets": "assets/bosses/sky_fortress/",
+    "hp": 500,
+    "reward": 10000
+  },
+  "enemyDestructionVfx": "2026-10-28-skinline-impact-1"
 }

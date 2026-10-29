@@ -1,0 +1,462 @@
+{
+  "name": "Continental Bomber",
+  "nose": "north",
+  "frameSize": [
+    400,
+    224
+  ],
+  "origin": [
+    200,
+    112
+  ],
+  "nativeBody": [
+    384,
+    192
+  ],
+  "intendedDisplay": [
+    400,
+    224
+  ],
+  "frameMs": 100,
+  "sequences": {
+    "engine": [
+      "engine/frame_01.png",
+      "engine/frame_02.png",
+      "engine/frame_03.png",
+      "engine/frame_04.png"
+    ],
+    "missile_launch": [
+      "missile_launch/frame_01.png",
+      "missile_launch/frame_02.png",
+      "missile_launch/frame_03.png",
+      "missile_launch/frame_04.png"
+    ],
+    "ballistic_missile": [
+      "ballistic_missile/frame_01.png",
+      "ballistic_missile/frame_02.png",
+      "ballistic_missile/frame_03.png",
+      "ballistic_missile/frame_04.png"
+    ],
+    "bomb": [
+      "bomb/frame_01.png",
+      "bomb/frame_02.png",
+      "bomb/frame_03.png",
+      "bomb/frame_04.png"
+    ],
+    "bomb_warning": [
+      "bomb_warning/frame_01.png",
+      "bomb_warning/frame_02.png",
+      "bomb_warning/frame_03.png",
+      "bomb_warning/frame_04.png"
+    ],
+    "bomb_impact": [
+      "bomb_impact/frame_01.png",
+      "bomb_impact/frame_02.png",
+      "bomb_impact/frame_03.png",
+      "bomb_impact/frame_04.png"
+    ],
+    "emp": [
+      "emp/frame_01.png",
+      "emp/frame_02.png",
+      "emp/frame_03.png",
+      "emp/frame_04.png"
+    ],
+    "destruction": [
+      "destruction/frame_01.png",
+      "destruction/frame_02.png",
+      "destruction/frame_03.png",
+      "destruction/frame_04.png"
+    ],
+    "emp_charge": [
+      "emp/frame_01.png",
+      "emp/frame_02.png"
+    ],
+    "emp_activation": [
+      "emp/frame_03.png",
+      "emp/frame_04.png"
+    ],
+    "emp_shockwave": [
+      "emp/frame_04.png"
+    ],
+    "damage_smoke": [
+      "bomb_impact/frame_04.png"
+    ],
+    "flight": [
+      "flight/frame_01.png",
+      "flight/frame_02.png",
+      "flight/frame_03.png",
+      "flight/frame_04.png"
+    ],
+    "damaged_flight": [
+      "damaged_flight/frame_01.png",
+      "damaged_flight/frame_02.png",
+      "damaged_flight/frame_03.png",
+      "damaged_flight/frame_04.png"
+    ]
+  },
+  "assets": [
+    {
+      "path": "engine/frame_01.png",
+      "size": [
+        16,
+        40
+      ],
+      "frame": 1
+    },
+    {
+      "path": "engine/frame_02.png",
+      "size": [
+        16,
+        40
+      ],
+      "frame": 2
+    },
+    {
+      "path": "engine/frame_03.png",
+      "size": [
+        16,
+        40
+      ],
+      "frame": 3
+    },
+    {
+      "path": "engine/frame_04.png",
+      "size": [
+        16,
+        40
+      ],
+      "frame": 4
+    },
+    {
+      "path": "missile_launch/frame_01.png",
+      "size": [
+        48,
+        48
+      ],
+      "frame": 1
+    },
+    {
+      "path": "missile_launch/frame_02.png",
+      "size": [
+        48,
+        48
+      ],
+      "frame": 2
+    },
+    {
+      "path": "missile_launch/frame_03.png",
+      "size": [
+        48,
+        48
+      ],
+      "frame": 3
+    },
+    {
+      "path": "missile_launch/frame_04.png",
+      "size": [
+        48,
+        48
+      ],
+      "frame": 4
+    },
+    {
+      "path": "ballistic_missile/frame_01.png",
+      "size": [
+        24,
+        64
+      ],
+      "frame": 1
+    },
+    {
+      "path": "ballistic_missile/frame_02.png",
+      "size": [
+        24,
+        64
+      ],
+      "frame": 2
+    },
+    {
+      "path": "ballistic_missile/frame_03.png",
+      "size": [
+        24,
+        64
+      ],
+      "frame": 3
+    },
+    {
+      "path": "ballistic_missile/frame_04.png",
+      "size": [
+        24,
+        64
+      ],
+      "frame": 4
+    },
+    {
+      "path": "bomb/frame_01.png",
+      "size": [
+        24,
+        48
+      ],
+      "frame": 1
+    },
+    {
+      "path": "bomb/frame_02.png",
+      "size": [
+        24,
+        48
+      ],
+      "frame": 2
+    },
+    {
+      "path": "bomb/frame_03.png",
+      "size": [
+        24,
+        48
+      ],
+      "frame": 3
+    },
+    {
+      "path": "bomb/frame_04.png",
+      "size": [
+        24,
+        48
+      ],
+      "frame": 4
+    },
+    {
+      "path": "bomb_warning/frame_01.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 1
+    },
+    {
+      "path": "bomb_warning/frame_02.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 2
+    },
+    {
+      "path": "bomb_warning/frame_03.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 3
+    },
+    {
+      "path": "bomb_warning/frame_04.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 4
+    },
+    {
+      "path": "bomb_impact/frame_01.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 1
+    },
+    {
+      "path": "bomb_impact/frame_02.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 2
+    },
+    {
+      "path": "bomb_impact/frame_03.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 3
+    },
+    {
+      "path": "bomb_impact/frame_04.png",
+      "size": [
+        64,
+        64
+      ],
+      "frame": 4
+    },
+    {
+      "path": "emp/frame_01.png",
+      "size": [
+        96,
+        96
+      ],
+      "frame": 1
+    },
+    {
+      "path": "emp/frame_02.png",
+      "size": [
+        96,
+        96
+      ],
+      "frame": 2
+    },
+    {
+      "path": "emp/frame_03.png",
+      "size": [
+        96,
+        96
+      ],
+      "frame": 3
+    },
+    {
+      "path": "emp/frame_04.png",
+      "size": [
+        96,
+        96
+      ],
+      "frame": 4
+    },
+    {
+      "path": "destruction/frame_01.png",
+      "size": [
+        128,
+        128
+      ],
+      "frame": 1
+    },
+    {
+      "path": "destruction/frame_02.png",
+      "size": [
+        128,
+        128
+      ],
+      "frame": 2
+    },
+    {
+      "path": "destruction/frame_03.png",
+      "size": [
+        128,
+        128
+      ],
+      "frame": 3
+    },
+    {
+      "path": "destruction/frame_04.png",
+      "size": [
+        128,
+        128
+      ],
+      "frame": 4
+    },
+    {
+      "path": "flight/frame_01.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 1
+    },
+    {
+      "path": "damaged_flight/frame_01.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 1
+    },
+    {
+      "path": "flight/frame_02.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 2
+    },
+    {
+      "path": "damaged_flight/frame_02.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 2
+    },
+    {
+      "path": "flight/frame_03.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 3
+    },
+    {
+      "path": "damaged_flight/frame_03.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 3
+    },
+    {
+      "path": "flight/frame_04.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 4
+    },
+    {
+      "path": "damaged_flight/frame_04.png",
+      "size": [
+        400,
+        224
+      ],
+      "frame": 4
+    }
+  ],
+  "movementAnimations": {
+    "entrance": "bottom to upper field, 1800ms",
+    "departure": "north beyond top, complete 2000ms after launch trigger",
+    "return": "bottom to upper field, 1800ms"
+  },
+  "engineNozzles": [
+    [
+      49,
+      108
+    ],
+    [
+      78,
+      123
+    ],
+    [
+      105,
+      137
+    ],
+    [
+      134,
+      146
+    ],
+    [
+      266,
+      146
+    ],
+    [
+      295,
+      137
+    ],
+    [
+      322,
+      123
+    ],
+    [
+      351,
+      108
+    ],
+    [
+      200,
+      180
+    ]
+  ]
+}

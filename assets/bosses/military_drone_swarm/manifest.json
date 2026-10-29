@@ -1,0 +1,346 @@
+{
+  "name": "Tactical Military Drone Swarm",
+  "sheet": "military_drone_swarm_sheet.png",
+  "size": [
+    1024,
+    352
+  ],
+  "columnWidth": 256,
+  "frameMs": 100,
+  "background": "transparent RGBA",
+  "rows": [
+    {
+      "name": "vortex",
+      "y": 0,
+      "frameSize": [
+        128,
+        128
+      ],
+      "frames": 4
+    },
+    {
+      "name": "line",
+      "y": 128,
+      "frameSize": [
+        256,
+        64
+      ],
+      "frames": 4
+    },
+    {
+      "name": "enraged",
+      "y": 192,
+      "frameSize": [
+        128,
+        128
+      ],
+      "frames": 4
+    },
+    {
+      "name": "projectiles",
+      "y": 320,
+      "frameSize": [
+        32,
+        32
+      ],
+      "frames": 3
+    }
+  ],
+  "lineTransparentGaps": [
+    [
+      61,
+      97
+    ],
+    [
+      157,
+      196
+    ]
+  ],
+  "frames": [
+    {
+      "file": "vortex/vortex_01.png",
+      "sequence": "vortex",
+      "index": 0,
+      "rect": [
+        64,
+        0,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "vortex/vortex_02.png",
+      "sequence": "vortex",
+      "index": 1,
+      "rect": [
+        320,
+        0,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "vortex/vortex_03.png",
+      "sequence": "vortex",
+      "index": 2,
+      "rect": [
+        576,
+        0,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "vortex/vortex_04.png",
+      "sequence": "vortex",
+      "index": 3,
+      "rect": [
+        832,
+        0,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "line/line_01.png",
+      "sequence": "line",
+      "index": 0,
+      "rect": [
+        0,
+        128,
+        256,
+        64
+      ],
+      "size": [
+        256,
+        64
+      ],
+      "anchor": [
+        128,
+        32
+      ]
+    },
+    {
+      "file": "line/line_02.png",
+      "sequence": "line",
+      "index": 1,
+      "rect": [
+        256,
+        128,
+        256,
+        64
+      ],
+      "size": [
+        256,
+        64
+      ],
+      "anchor": [
+        128,
+        32
+      ]
+    },
+    {
+      "file": "line/line_03.png",
+      "sequence": "line",
+      "index": 2,
+      "rect": [
+        512,
+        128,
+        256,
+        64
+      ],
+      "size": [
+        256,
+        64
+      ],
+      "anchor": [
+        128,
+        32
+      ]
+    },
+    {
+      "file": "line/line_04.png",
+      "sequence": "line",
+      "index": 3,
+      "rect": [
+        768,
+        128,
+        256,
+        64
+      ],
+      "size": [
+        256,
+        64
+      ],
+      "anchor": [
+        128,
+        32
+      ]
+    },
+    {
+      "file": "enraged/enraged_01.png",
+      "sequence": "enraged",
+      "index": 0,
+      "rect": [
+        64,
+        192,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "enraged/enraged_02.png",
+      "sequence": "enraged",
+      "index": 1,
+      "rect": [
+        320,
+        192,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "enraged/enraged_03.png",
+      "sequence": "enraged",
+      "index": 2,
+      "rect": [
+        576,
+        192,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "enraged/enraged_04.png",
+      "sequence": "enraged",
+      "index": 3,
+      "rect": [
+        832,
+        192,
+        128,
+        128
+      ],
+      "size": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ]
+    },
+    {
+      "file": "projectiles/drone.png",
+      "sequence": "projectiles",
+      "index": 0,
+      "rect": [
+        112,
+        320,
+        32,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        16,
+        16
+      ]
+    },
+    {
+      "file": "projectiles/broken_drone.png",
+      "sequence": "projectiles",
+      "index": 1,
+      "rect": [
+        368,
+        320,
+        32,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        16,
+        16
+      ]
+    },
+    {
+      "file": "projectiles/laser.png",
+      "sequence": "projectiles",
+      "index": 2,
+      "rect": [
+        624,
+        320,
+        32,
+        32
+      ],
+      "size": [
+        32,
+        32
+      ],
+      "anchor": [
+        16,
+        16
+      ]
+    }
+  ]
+}
