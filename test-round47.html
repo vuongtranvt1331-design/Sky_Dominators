@@ -14,10 +14,10 @@
     <script src="skins/elder-wood-config.js?v=2026-10-28-round36-1"></script>
     <script src="skins/catalog.js?v=2026-10-29-assets-cleanup-1"></script>
     <script src="skins/runtime.js?v=2026-10-28-skyborne-1"></script>
-    <script src="combat/sky-fortress.js?v=2026-10-29-wide-helicopters-1"></script>
-    <script src="combat/continental-bomber.js?v=2026-10-29-wide-helicopters-1"></script>
-    <script src="combat/drone-swarm.js?v=2026-10-29-swarm-1"></script>
-    <script src="combat/bosses.js?v=2026-10-29-wide-helicopters-1"></script>
+    <script src="combat/drone-swarm.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/sky-fortress.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/continental-bomber.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/bosses.js?v=2026-10-30-hp-third-1"></script>
     <script src="progress/core.js?v=2026-10-28-round36-1"></script>
     <script src="progress/firestore.js?v=2026-10-28-round36-1"></script>
     <script src="progress/client.js?v=2026-10-28-round36-1"></script>
@@ -2050,14 +2050,36 @@
         // =========================================================================
         // 2. PROCEDURAL WEB AUDIO SYNTHESIZER
         // =========================================================================
+        // Set the second entry when the second gunshot file is supplied.
+        const PLAYER_GUNSHOT_SOURCES = ['assets/audio/player-garand-shot.mp3', null];
+        const STANDARD_ENEMY_BULLET_SPEED = 190;
         class SoundFX {
             constructor() {
                 this.ctx = null;
                 this.muted = false;
                 this.noiseBuffer = null;
+                this.shotSounds = null;
+                this.playerShotPools = null;
             }
 
             init() {
+                if (!this.shotSounds) {
+                    const samples = {
+                        bossBullet: ['assets/audio/boss-pkm-shot.mp3', 0.45],
+                        rocket: ['assets/audio/boss-rocket-launch.mp3', 0.65]
+                    };
+                    // A bounded pool permits overlapping shots without new timers or listeners.
+                    this.shotSounds = Object.fromEntries(Object.entries(samples).map(([key, [src, volume]]) => [key, {
+                        cursor: 0,
+                        voices: Array.from({length: 4}, () => {
+                            const voice = new Audio(src);
+                            voice.preload = 'auto';
+                            voice.volume = volume;
+                            return voice;
+                        })
+                    }]));
+                }
+                if (!this.playerShotPools) this.setPlayerGunshotSources(PLAYER_GUNSHOT_SOURCES);
                 if (!this.ghidorahRoar) {
                     this.ghidorahRoar = new Audio('assets/audio/king-ghidorah-roar-1.mp3');
                     this.ghidorahRoar.preload = 'auto';
@@ -2096,20 +2118,56 @@
                 return true;
             }
 
-            playShoot() {
-                if (!this.ctx || this.muted) return;
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(880, now);
-                osc.frequency.exponentialRampToValueAtTime(140, now + 0.10);
-                gain.gain.setValueAtTime(0.16, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.10);
+            setPlayerGunshotSources(sources) {
+                this.playerShotPools = sources.filter(src => typeof src === 'string' && src.trim()).slice(0, 2).map(src => ({src, voices: []}));
+                for(const pool of this.playerShotPools)for(let i=0;i<4;i++)pool.voices.push(this.createPlayerVoice(pool));
+            }
 
-                osc.connect(gain).connect(this.ctx.destination);
-                osc.start(now);
-                osc.stop(now + 0.10);
+            createPlayerVoice(pool) {
+                const voice=new Audio(pool.src);voice.preload='auto';voice.volume=.65;voice.shotBusy=false;
+                const release=()=>{voice.shotBusy=false;if(pool.voices.length>4)pool.voices=pool.voices.filter(v=>v!==voice);};
+                voice.addEventListener('ended',release);voice.addEventListener('error',release);voice.releaseShot=release;
+                return voice;
+            }
+
+            playPlayerShot() {
+                if(this.muted)return false;
+                this.init();const pools=this.playerShotPools;if(!pools.length)return false;
+                const pool=pools[Math.min(pools.length-1,Math.floor(Math.random()*pools.length))];
+                let voice=pool.voices.find(v=>!v.shotBusy&&(v.paused||v.ended));
+                if(!voice){voice=this.createPlayerVoice(pool);pool.voices.push(voice);}
+                // Reserve synchronously: rapid shots never restart an active voice.
+                voice.shotBusy=true;
+                try{voice.currentTime=0;const playing=voice.play();if(playing?.catch)playing.catch(()=>voice.releaseShot());return true;}
+                catch(e){voice.releaseShot();return false;}
+            }
+
+            playShotSample(key) {
+                if (this.muted) return false;
+                this.init();
+                const pool = this.shotSounds[key];
+                if (!pool) return false;
+                const voice = pool.voices.find(v => v.paused || v.ended) || pool.voices[pool.cursor];
+                pool.cursor = (pool.voices.indexOf(voice) + 1) % pool.voices.length;
+                try {
+                    voice.pause();
+                    if (voice.currentTime > 0 || voice.ended) voice.currentTime = 0;
+                    const playing = voice.play();
+                    if (playing && playing.catch) playing.catch(() => {});
+                    return true;
+                } catch (e) { return false; }
+            }
+
+            playBulletShoot(isPlayer = false) {
+                return isPlayer ? this.playPlayerShot() : this.playShotSample('bossBullet');
+            }
+
+            playRocketLaunch() {
+                return this.playShotSample('rocket');
+            }
+
+            playShoot() {
+                return this.playBulletShoot(true);
             }
 
             playExplosion(isBig = false) {
@@ -3356,7 +3414,7 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.speedY = 190; // px/s downward moderate fair speed
+                this.speedY = STANDARD_ENEMY_BULLET_SPEED; // px/s downward moderate fair speed
                 this.active = true;
             }
 
@@ -3688,13 +3746,7 @@
         // AIRCRAFT OWNERSHIP — CONFIRMED PLAYER PROGRESS
         // =========================================================================
         function isAircraftUnlocked(index) { return SkyProfile.owns(index); }
-        function getNextUnlockedAircraftIndex(currentIndex, step = 1) {
-            const total=AIRCRAFT_CONFIGS.length,dir=step>=0?1:-1;
-            for(let i=1;i<=total;i++){const candidate=(currentIndex+dir*i+total*10)%total;if(isAircraftUnlocked(candidate))return candidate;}
-            return 0;
-        }
         window.isAircraftUnlocked=isAircraftUnlocked;
-        window.getNextUnlockedAircraftIndex=getNextUnlockedAircraftIndex;
 
         // Visual FX triggers
         function triggerShieldBreakEffect(x, y) {
@@ -4262,6 +4314,7 @@
                         bullets.push(new Bullet(this.x, this.y - 30, true));
                         for (const w of this.wingmen) {
                             bullets.push(new Bullet(this.x + w.offsetX, this.y + w.offsetY - 20, true));
+                            try { audio.playShoot(); } catch (e) {}
                         }
                         try { audio.playLaserShoot(); } catch (e) {}
 
@@ -5623,7 +5676,7 @@
             SkyUI.stopPromotion();
             sortieOwner=SkyProfile.name;
             currentSortieId = 'sorties_'+crypto.randomUUID();
-            bossEncounter.reset(currentSortieId,[1,2,3]);
+            bossEncounter.reset(currentSortieId,[1,2,3,4]); // Round47 starts after the Round40 encounter.
             bomberHazard.reset();
             suspendedBossRows=[];SkySkins.clear();document.getElementById('dangerHUDContainer').style.visibility='';
             score = 0;
@@ -5714,7 +5767,7 @@
             return true;
         }
         bossEncounter = new SkyBosses.Director({
-            context:()=>({w:GAME_WIDTH,h:GAME_HEIGHT,player,bullets}),
+            context:()=>({w:GAME_WIDTH,h:GAME_HEIGHT,player,bullets,enemyBulletSpeed:STANDARD_ENEMY_BULLET_SPEED}),
             layout:()=>{
                 const field=canvas.getBoundingClientRect(),hud=document.getElementById('leftHUDContainer').getBoundingClientRect();
                 if(!field.height)return {};
@@ -5751,8 +5804,8 @@
             victory:claimBossVictory,
             localExplosion:(target,a)=>triggerCinematicExplosion(target.x,target.y,false,SkySkins.eliminationSkin(a?.projectile)),
             cinematicExplosion:(position,big)=>{try{audio.playExplosion(big);}catch{}},
-            launch:()=>{try{audio.playEnemyShoot();}catch{}},
-            gun:()=>{try{audio.playEnemyShoot();}catch{}},
+            launch:()=>{try{audio.playRocketLaunch();}catch{}},
+            gun:()=>{try{audio.playBulletShoot();}catch{}},
             playerHit:p=>{
                 if (player.invulnerableTimer>0) return;
                 player.takeDamage('BOSS_PROJECTILE',p.x,p.y);player.invulnerableTimer=1200;
@@ -5984,16 +6037,6 @@
             }
             if (e.code === 'KeyP') {
                 togglePause();
-            }
-            // Dynamic Aircraft Selection (Keys 1 to 5, Numpad 1 to 5, or C to cycle unlocked)
-            if (e.code === 'Digit1' || e.code === 'Numpad1') player.setAircraft(0);
-            if (e.code === 'Digit2' || e.code === 'Numpad2') player.setAircraft(1);
-            if (e.code === 'Digit3' || e.code === 'Numpad3') player.setAircraft(2);
-            if (e.code === 'Digit4' || e.code === 'Numpad4') player.setAircraft(3);
-            if (e.code === 'Digit5' || e.code === 'Numpad5') player.setAircraft(4);
-            if (e.code === 'KeyC') {
-                const nextIdx = getNextUnlockedAircraftIndex(player.aircraftIndex, 1);
-                player.setAircraft(nextIdx);
             }
             if (e.code === 'KeyE' || e.code === 'KeyQ') {
                 player.triggerActiveSkill();

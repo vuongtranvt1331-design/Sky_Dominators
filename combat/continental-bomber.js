@@ -44,7 +44,9 @@ class Encounter{
  }
  chooseSafe(){const {w,h,player}=this.d.h.context(),limits=this.d.h.maxPlayerBox?.()||{width:150,height:120};this.region={x:0,y:120,w,h:h-165};const cw=w/5,ch=this.region.h/5,sw=Math.max(cw-8,limits.width+20),sh=Math.max(ch-8,limits.height+20),speed=player.speed||280;let candidates=[];
   for(let i=0;i<25;i++){const x=clamp((i%5+.5)*cw,sw/2,w-sw/2),y=clamp(this.region.y+(Math.floor(i/5)+.5)*ch,this.region.y+sh/2,h-45-sh/2);if(Math.hypot(x-player.x,y-player.y)<=speed*(this.series===2?Math.max(0,this.warningDuration()-100):CONFIG.warning-450)/1000)candidates.push({i,x,y});}
-  if(!candidates.length)candidates=[{i:12,x:clamp(player.x,sw/2,w-sw/2),y:clamp(player.y,this.region.y+sh/2,h-45-sh/2)}];const changed=candidates.filter(c=>c.i!==this.safeIndex);if(changed.length)candidates=changed;const random=this.d.h.random||Math.random,c=candidates[Math.min(candidates.length-1,Math.floor(random()*candidates.length))];this.safeIndex=c.i;this.safe={x:c.x-sw/2,y:c.y-sh/2,w:sw,h:sh};this.events.push({type:'wave_warning',series:this.series,wave:this.wave,safe:c.i,at:this.age});
+  if(!candidates.length)candidates=[{i:12,x:clamp(player.x,sw/2,w-sw/2),y:clamp(player.y,this.region.y+sh/2,h-45-sh/2)}];const changed=candidates.filter(c=>c.i!==this.safeIndex);if(changed.length)candidates=changed;const random=this.d.h.random||Math.random,c=candidates[Math.min(candidates.length-1,Math.floor(random()*candidates.length))];this.safeIndex=c.i;this.safe={x:c.x-sw/2,y:c.y-sh/2,w:sw,h:sh};// Store each drop once. Telegraph, falling sprite and impact share its position.
+  this.bombDrops=Array.from({length:25},(_,i)=>({index:i,x:(i%5+.5)*cw+(this.series===2?(random()-.5)*cw*.7:0),y:this.region.y+(Math.floor(i/5)+.5)*ch})).filter(p=>p.index!==this.safeIndex);
+  this.events.push({type:'wave_warning',series:this.series,wave:this.wave,safe:c.i,at:this.age,drops:this.bombDrops.map(p=>({...p}))});
  }
  createEscorts(){if(this.escortsSpawned)return;this.escortsSpawned=true;this.escorts=[-1,1].map((side,index)=>{const entry={side,dead:false};const h={...this.d.h,suspend:()=>{},resume:()=>{},hideHUD:true,positionBoss:b=>{
    const {w,h}=this.d.h.context(),layout=this.d.h.layout?.()||{};
@@ -56,7 +58,7 @@ class Encounter{
    const rise=top+88*scale,travel=Math.max(0,Math.min(64,bottom-rise-88*scale));
    return {x:side<0?left:w-left,y:rise+travel*(1-Math.cos(age/1300+index*.8))*.5,renderScale:scale};
   },victory:()=>{entry.dead=true;}};
-  entry.director=new this.Director(h);entry.director.reset('continental-escort-'+index,[1,3,4,5]);entry.director.rowCompleted(19);entry.director.phase='fight';entry.director.missileTimer=0;entry.director.gunTimer=0;entry.director.gunPause=0;
+  entry.director=new this.Director(h);entry.director.reset('continental-escort-'+index,[1,3,4,5]);entry.director.rowCompleted(20);entry.director.phase='fight';entry.director.missileTimer=0;entry.director.gunTimer=0;entry.director.gunPause=0;
   Object.assign(entry.director.boss,{kind:'escort',width:158.4,height:176,ownerBoss:this.b},h.positionBoss(entry.director.boss));return entry;});}
  visible(){return ['entrance','launch','return','protection_exit','combat_return','exit_return','exit_hold','thrusting'].includes(this.state);}
  bodyY(){const {h}=this.d.h.context();if(this.state==='entrance')return h+160-(h-140)*ease(this.phaseAge/CONFIG.entrance);
@@ -94,7 +96,7 @@ class Encounter{
   }}
  drawGrid(ctx,art){const r=this.region,s=this.safe,{w}=this.d.h.context(),cw=r.w/5,ch=r.h/5;ctx.save();ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.rect(s.x,s.y,s.w,s.h);ctx.clip('evenodd');
   ctx.fillStyle=this.state==='wave_impact'?'rgba(255,110,24,.38)':'rgba(215,40,30,.18)';ctx.fillRect(r.x,r.y,r.w,r.h);
-  for(let i=0;i<25;i++){if(i===this.safeIndex)continue;const x=(i%5+.5)*cw,y=r.y+(Math.floor(i/5)+.5)*ch;if(this.state==='wave_fall')sprite(ctx,art,'bomb',this.phaseAge,x,y-75*(1-this.phaseAge/CONFIG.fall),18,36);else if(this.state==='wave_impact')sprite(ctx,art,'bomb_impact',this.phaseAge,x,y,Math.min(cw,ch)*.8,Math.min(cw,ch)*.8,false);else if(this.state==='wave_warning')sprite(ctx,art,'bomb_warning',this.phaseAge,x,y,30,30);}
+  for(const {x,y} of this.bombDrops){if(this.state==='wave_fall')sprite(ctx,art,'bomb',this.phaseAge,x,y-75*(1-this.phaseAge/CONFIG.fall),18,36);else if(this.state==='wave_impact')sprite(ctx,art,'bomb_impact',this.phaseAge,x,y,Math.min(cw,ch)*.8,Math.min(cw,ch)*.8,false);else if(this.state==='wave_warning')sprite(ctx,art,'bomb_warning',this.phaseAge,x,y,30,30);}
   ctx.restore();ctx.strokeStyle='#ff7766';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<=5;i++){ctx.moveTo(i*cw,r.y);ctx.lineTo(i*cw,r.y+r.h);ctx.moveTo(0,r.y+i*ch);ctx.lineTo(w,r.y+i*ch);}ctx.stroke();ctx.fillStyle='rgba(30,245,148,.18)';ctx.fillRect(s.x,s.y,s.w,s.h);ctx.strokeStyle='#60ffbb';ctx.lineWidth=3;ctx.strokeRect(s.x,s.y,s.w,s.h);ctx.fillStyle='#c6ffdd';ctx.font='bold 13px monospace';ctx.fillText('SAFE',s.x+s.w/2,s.y+s.h/2);
  }
  draw(ctx,art){const {w,h}=this.d.h.context();ctx.save();ctx.imageSmoothingEnabled=false;ctx.textAlign='center';const y=this.bodyY()+Math.sin(this.age/700)*2,visible=this.visible();
@@ -102,7 +104,7 @@ class Encounter{
   for(const p of this.missiles)sprite(ctx,art,'ballistic_missile',p.age,p.x,p.y,15,40);
   if(['protection_exit','thrusting'].includes(this.state))for(const x of [-110,-55,55,110])sprite(ctx,art,'engine',this.phaseAge,this.b.x+x,y+65,30,64);
   if(this.state.startsWith('wave_'))this.drawGrid(ctx,art);
-  if(['protection_exit','escorts'].includes(this.state))for(const e of this.escorts)if(!e.dead){e.director.draw(ctx,art);const b=e.director.boss;ctx.fillStyle='#ffdc85';ctx.font='12px monospace';ctx.fillText('ESCORT '+b.hp+'/160',b.x,b.y+100*(b.renderScale||1));}
+  if(['protection_exit','escorts'].includes(this.state))for(const e of this.escorts)if(!e.dead){e.director.draw(ctx,art);const b=e.director.boss;ctx.fillStyle='#ffdc85';ctx.font='12px monospace';ctx.fillText('ESCORT '+b.hp+'/'+b.maxHp,b.x,b.y+100*(b.renderScale||1));}
   ctx.fillStyle='#fff';ctx.font='bold 16px monospace';ctx.fillText('CONTINENTAL BOMBER — ROUND '+this.b.round,w/2,140);ctx.font='13px monospace';const labels={entrance:'STRATEGIC BOMBER APPROACHING',launch:'BALLISTIC VOLLEY — TAKE COVER',return:'BOMBER RETURNING WITH TWO ESCORTS',protection_exit:'PROTECTION CALL — TWO HELICOPTERS INBOUND',escorts:'BOMBER AWAY — DESTROY BOTH HELICOPTERS',combat_return:'CONTINENTAL BOMBER RETURNING',exit_return:'ROUND '+this.b.round+' COMPLETE — BOMBER RETURNING',exit_hold:'DEPARTURE IN '+Math.ceil((CONFIG.exitHold-this.phaseAge)/1000)+'s',thrusting:'CONTINENTAL BOMBER DEPARTING'};if(this.state.startsWith('wave_'))ctx.fillText('BOMBING '+this.series+' — WAVE '+this.wave+'/5 — FIND GREEN COVER',w/2,162);else ctx.fillText(labels[this.state]||'',w/2,162);ctx.restore();
  }
 }

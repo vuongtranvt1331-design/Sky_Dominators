@@ -10,8 +10,8 @@
     'use strict';
     const BASE = 'assets/bosses/military_drone_swarm/';
     const CONFIG = Object.freeze({
-        maxHp: 500, enragedHp: 250, introMs: 1200, vortexMs: 5000,
-        morphMs: 300, lineWarningMs: 600, lineRecoveryMs: 1000, lineBursts: 5,
+        maxHp: 167, enragedHp: 83, vortexDroneHp: 1, introMs: 1200, vortexMs: 5000,
+        morphMs: 300, lineWarningMs: 600, lineRecoveryMs: 1000, lineBursts: 5, wallRows: 6, laneCount: 5, wallLaneEffectMs: 250, shootingScale: .5, vortexSpacing: 1.4,
         vortexIntervalMs: 400, vortexCount: 12, vortexSpeed: 145,
         wallSpeed: 370, wallSpacing: 16, snipePeriodMs: 1000,
         snipeWarningMs: 500, snipeSpeed: 620, debrisHpStep: 10,
@@ -24,15 +24,25 @@
     const assets = Object.freeze([...ART.vortex, ...ART.line, ...ART.enraged, ART.drone, ART.broken, ART.laser]);
     const EPS = 1e-7;
 
+    // Reuse the first 64x64 cell of the existing line atlas: same four frames,
+    // same cadence and image cache for Boss 3 and Boss 5. No copied textures.
+    function drawDrone(ctx, art, x, y, size, age, angle = 0) {
+        const scale = size / 64, frame = Math.floor(age / CONFIG.frameMs) % ART.line.length;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+        ctx.beginPath(); ctx.rect(-size / 2, -size / 2, size, size); ctx.clip();
+        art(ctx, ART.line[frame], 96 * scale, 0, 256 * scale, 64 * scale);
+        ctx.restore();
+    }
+
     // Custom drone projectile: a frozen aim vector, never retargeted after launch.
     // Homing is deliberately disabled for the telegraphed attacks so dodging works.
     class HomingDrone {
-        constructor({x, y, vx = 0, vy = 0, kind = 'vortex', radius = 6, gravity = 0}) {
-            Object.assign(this, {x, y, vx, vy, kind, radius, gravity, active: true, age: 0, px: x, py: y});
+        constructor({x, y, vx = 0, vy = 0, kind = 'vortex', radius = 6, gravity = 0, lifetime = Infinity}) {
+            Object.assign(this, {x, y, vx, vy, kind, radius, gravity, active: true, age: 0, px: x, py: y, lifetime, hp: kind === 'vortex' ? CONFIG.vortexDroneHp : undefined, maxHp: kind === 'vortex' ? CONFIG.vortexDroneHp : undefined});
         }
         update(dt, viewport) {
             if (!this.active) return;
-            const seconds = dt / 1000;
+            const seconds = Math.min(dt, Math.max(0, this.lifetime - this.age)) / 1000;
             this.px = this.x; this.py = this.y;
             this.x += this.vx * seconds;
             this.y += this.vy * seconds + .5 * this.gravity * seconds * seconds;
@@ -43,7 +53,9 @@
         draw(ctx, art) {
             ctx.save(); ctx.translate(this.x, this.y);
             if (this.kind !== 'debris') ctx.rotate(Math.atan2(this.vy, this.vx) + Math.PI / 2);
-            art(ctx, this.kind === 'debris' ? ART.broken : ART.drone, 0, 0, this.kind === 'debris' ? 40 : 28, this.kind === 'debris' ? 40 : 28);
+            if(this.kind==='wall') art(ctx, ART.laser, 0, 0, 28, 28);
+            else if(this.kind==='debris') art(ctx, ART.broken, 0, 0, 40, 40);
+            else drawDrone(ctx, art, 0, 0, 28, this.animationAge ?? this.age);
             ctx.restore();
         }
     }
@@ -60,7 +72,7 @@
             this.vortexClock = 0; this.vortexAngle = 0; this.snipeClock = 0;
             this.lineCycle = 0; this.lineTurn = 0; this.mixed = false;
             this.safeLanes = []; this.wallColumns = []; this.snipe = null;
-            this.finished = false; this.events = []; this.parts = [];
+            this.finished = false; this.events = []; this.parts = []; this.wallRowsFired = 0; this.wallLaneEffects = []; this.destroyedDroneShots = new Set();
             this.b.maxHp = CONFIG.maxHp; this.b.hp = CONFIG.maxHp;
             this.setState('intro'); this.updatePose();
         }
@@ -97,10 +109,8 @@
             this.b.fortressVisualBox = {x: this.b.x, y: this.b.y, w: this.b.width, h: this.b.height};
             let boxes;
             if (this.isLine()) {
-                const width = w - 24;
-                boxes = [[.02, .238], [.379, .614], [.766, .98]].map(([lo, hi]) => ({
-                    x: 12 + width * (lo + hi) / 2, y: this.b.y, w: width * (hi - lo), h: 100
-                }));
+                this.shootingDroneSize=64*Math.min((w-24)/256,128/64)*CONFIG.shootingScale;
+                boxes=[.125,.5,.875].map(f=>({x:12+(w-24)*f,y:this.b.y,w:this.shootingDroneSize*.875,h:this.shootingDroneSize*.875}));
             } else if (this.phase === 2) boxes = [{x: this.b.x, y: this.b.y, w: 224, h: 224}];
             else boxes = [
                 {x: this.b.x, y: this.b.y - 76, w: 176, h: 72},
@@ -113,26 +123,44 @@
                 if (!this.parts[i]) {
                     const owner = this;
                     this.parts[i] = {kind: 'core', ownerBoss: this.b, id: 'swarm-part-' + i,
-                        get hp() { return owner.b.hp; }, get active() { return !owner.finished && owner.b.active && owner.d.phase === 'fight'; }};
+                        get hp() { return owner.b.hp; }, get maxHp() { return owner.b.maxHp; }, get active() { return !owner.finished && owner.b.active && owner.d.phase === 'fight'; }};
                 }
                 Object.assign(this.parts[i], box, {width: box.w, height: box.h, fortressVisualBox: box});
             });
             this.partCount = boxes.length;
         }
-        targets() { return this.d.phase === 'fight' && this.b.hp > 0 && !this.finished ? this.parts.slice(0, this.partCount) : []; }
+        targets() { return this.d.phase === 'fight' && this.b.hp > 0 && !this.finished ? [...this.parts.slice(0, this.partCount),...this.d.shots.filter(p=>p.active&&p.kind==='vortex'&&p.hp===CONFIG.vortexDroneHp)] : []; }
+        destroyVortexDrone(target, attack) {
+            const p=attack?.projectile;
+            if(this.finished||this.d.phase!=='fight'||!attack?.collision||!p?.active||!p.attackId||
+                !this.d.shots.includes(target)||!target.active||target.hp!==CONFIG.vortexDroneHp||
+                this.destroyedDroneShots.has(p.attackId)||this.d.seen.has(p.attackId)||!this.d.h.validAttack(attack))return false;
+            const damage=attack.kind==='bomber'?20:attack.kind==='phantom'?30:attack.damage;
+            if(!Number.isFinite(damage)||damage<=0)return false;
+            this.destroyedDroneShots.add(p.attackId);this.d.seen.add(p.attackId);
+            p.active=false;target.active=false;target.hp=0;
+            this.d.h.localExplosion?.(target,attack);this.record('vortex_destroyed',{bossDamage:1});
+            return this.applyDamage(1,attack);
+        }
         hit(attack) {
+            if(attack?.target?.kind==='vortex')return this.destroyVortexDrone(attack.target,attack);
             if (this.finished || this.d.phase !== 'fight' || this.b.hp <= 0 || !attack?.collision ||
                 !attack.token || this.d.seen.has(attack.token) || !this.d.h.validAttack(attack) ||
                 (attack.target && attack.target !== this.b && attack.target.ownerBoss !== this.b)) return false;
             const base = attack.kind === 'bomber' ? 20 : attack.kind === 'phantom' ? 30 : attack.damage;
             const damage = base * (this.d.h.damageMultiplier?.(this.b, attack) ?? 1);
             if (!Number.isFinite(damage) || damage <= 0) return false;
-            const before = this.b.hp;
-            this.d.seen.add(attack.token); this.b.hp = Math.max(0, before - damage); this.b.hitFlash = 90;
+            this.d.seen.add(attack.token);
+            return this.applyDamage(damage,attack);
+        }
+        applyDamage(damage,attack) {
+            if(this.finished||this.d.phase!=='fight'||this.b.hp<=0||!Number.isFinite(damage)||damage<=0)return false;
+            const before=this.b.hp;
+            this.b.hp = Math.max(0, before - damage); this.b.hitFlash = 90;
             this.d.h.impact?.(attack.target || this.b, attack);
             if (this.b.hp <= CONFIG.enragedHp && this.phase === 1) this.enterEnraged();
-            // Count thresholds in the actual HP lost below 250, not hits or hp % 10.
-            // A hit crossing 250 carries its excess damage into the new phase.
+            // Count actual HP lost below the enraged threshold, retaining the existing
+            // 10-HP debris interval and any excess damage crossing into the phase.
             const oldSteps = Math.floor((CONFIG.enragedHp - Math.min(CONFIG.enragedHp, before)) / CONFIG.debrisHpStep);
             const newSteps = Math.floor((CONFIG.enragedHp - this.b.hp) / CONFIG.debrisHpStep);
             if (this.phase === 2) for (let n = oldSteps + 1; n <= newSteps; n++) this.dropDebris(n);
@@ -141,7 +169,7 @@
         }
         enterEnraged() {
             this.phase = 2; this.mixed = false; this.safeLanes = []; this.wallColumns = []; this.snipe = null;
-            this.d.shots = []; this.vortexClock = 0; this.snipeClock = 0;
+            this.d.shots = []; this.wallLaneEffects = []; this.vortexClock = 0; this.snipeClock = 0;
             this.setState('enraged'); this.updatePose(); this.record('enraged');
         }
         dropDebris(threshold) {
@@ -151,31 +179,32 @@
             this.record('debris', {thresholdHp: CONFIG.enragedHp - threshold * CONFIG.debrisHpStep, x: shot.x, y: shot.y});
         }
         prepareWall() {
-            const {w, player} = this.d.h.context();
-            const maxBox = this.d.h.maxPlayerBox?.()?.width || player.hitboxWidth || player.width || 60;
-            const safeWidth = Math.max(w * .32, maxBox + 32);
-            const two = this.lineTurn % 2 === 0 && safeWidth * 2 + 64 <= w;
-            const centers = two ? [w * .25, w * .75] : [w * .5];
-            this.safeLanes = centers.map(x => ({left: x - safeWidth / 2, right: x + safeWidth / 2}));
-            this.wallColumns = [];
-            const count = Math.ceil(w / CONFIG.wallSpacing), spacing = w / count;
-            for (let i = 0; i < count; i++) {
-                const x = (i + .5) * spacing;
-                if (!this.safeLanes.some(lane => x + 7 >= lane.left && x - 7 <= lane.right)) this.wallColumns.push(x);
-            }
-            this.record('wall_warning', {turn: this.lineTurn + 1, lanes: this.safeLanes.map(l => ({...l})), columns: [...this.wallColumns]});
+            const {w}=this.d.h.context(),random=this.d.h.random||Math.random,width=w/CONFIG.laneCount;
+            this.safeLaneIndex=Math.min(CONFIG.laneCount-1,Math.floor(random()*CONFIG.laneCount));
+            this.safeLanes=[{left:this.safeLaneIndex*width,right:(this.safeLaneIndex+1)*width}];
+            this.wallColumns=Array.from({length:CONFIG.laneCount},(_,i)=>(i+.5)*width).filter((_,i)=>i!==this.safeLaneIndex);
+            this.record('wall_warning',{turn:this.lineTurn+1,safeLane:this.safeLaneIndex,lanes:this.safeLanes.map(l=>({...l})),columns:[...this.wallColumns]});
+        }
+        fireWallRow() {
+            for(const x of this.wallColumns)this.d.shots.push(new HomingDrone({x,y:this.b.y+this.shootingDroneSize*.5,vy:CONFIG.wallSpeed,kind:'wall',radius:3.5}));
+            // The lane flash lasts 250ms; its bullets travel until collision or offscreen.
+            this.wallLaneEffects.push({bornAt:this.age,safeLane:this.safeLaneIndex,columns:[...this.wallColumns]});
+            this.wallRowsFired++;
+            this.record('wall_row',{turn:this.lineTurn,row:this.wallRowsFired,count:this.wallColumns.length,safeLane:this.safeLaneIndex});
+            this.d.h.gun?.({x:this.b.x,y:this.b.y});
         }
         fireWall() {
-            for (const x of this.wallColumns) this.d.shots.push(new HomingDrone({x, y: this.b.y + 58, vy: CONFIG.wallSpeed, kind: 'wall', radius: 7}));
-            this.lineTurn++; this.record('wall_fire', {turn: this.lineTurn, count: this.wallColumns.length});
-            this.d.h.gun?.({x: this.b.x, y: this.b.y}); this.setState('line_recovery');
+            this.lineTurn++;this.wallRowsFired=0;
+            this.record('wall_fire',{turn:this.lineTurn,count:this.wallColumns.length});
+            this.setState('line_recovery');this.fireWallRow();
         }
         fireVortex() {
             for (let i = 0; i < CONFIG.vortexCount; i++) {
                 const angle = this.vortexAngle + i * Math.PI * 2 / CONFIG.vortexCount;
                 const dx = Math.cos(angle), dy = Math.sin(angle);
-                this.d.shots.push(new HomingDrone({x: this.b.x + dx * 114, y: this.b.y + dy * 114,
+                this.d.shots.push(new HomingDrone({x: this.b.x + dx * 114 * CONFIG.vortexSpacing, y: this.b.y + dy * 114 * CONFIG.vortexSpacing,
                     vx: dx * CONFIG.vortexSpeed, vy: dy * CONFIG.vortexSpeed}));
+                Object.assign(this.d.shots[this.d.shots.length-1],{ownerBoss:this.b,w:28,h:28,width:28,height:28});
             }
             this.vortexAngle = (this.vortexAngle + Math.PI / 18) % (Math.PI * 2);
             this.record('vortex_fire', {mixed: this.mixed && this.isLine()});
@@ -195,7 +224,19 @@
         processPlayerShots() {
             for (const p of this.d.h.context().bullets || []) {
                 if (!p.active) continue;
-                const target = this.targets().find(t => this.segmentBox(p.prevX ?? p.x, p.prevY ?? p.y, p.x, p.y, t.x, t.y, t.w / 2, t.h / 2));
+                const drones=this.d.shots.filter(t=>t.active&&t.kind==='vortex'&&t.hp===CONFIG.vortexDroneHp&&this.segmentBox(p.prevX??p.x,p.prevY??p.y,p.x,p.y,t.x,t.y,14,14));
+                // A projectile hits the first collider along its path, not the boss behind it.
+                const candidates=[...drones,...this.targets().filter(t=>t.kind!=='vortex'&&this.segmentBox(p.prevX??p.x,p.prevY??p.y,p.x,p.y,t.x,t.y,t.w/2,t.h/2))];
+                const dx=p.x-(p.prevX??p.x),dy=p.y-(p.prevY??p.y),length2=dx*dx+dy*dy;
+                const along=t=>length2?((t.x-(p.prevX??p.x))*dx+(t.y-(p.prevY??p.y))*dy)/length2:Math.hypot(t.x-p.x,t.y-p.y);
+                candidates.sort((a,b)=>along(a)-along(b));
+                if(candidates[0]?.kind==='vortex'){
+                    const kind=p.bomberSpecial?'bomber':p.isSpecial?'phantom':'normal';
+                    this.destroyVortexDrone(candidates[0],{kind,token:p.attackId,projectile:p,damage:p.damage,target:candidates[0],collision:true,skinId:p.skinId});
+                    if(this.d.phase!=='fight'||this.finished)return;
+                    continue;
+                }
+                const target = candidates[0];
                 if (!target) continue;
                 const kind = p.bomberSpecial ? 'bomber' : p.isSpecial ? 'phantom' : 'normal';
                 const token = kind === 'phantom' ? 'phantom:' + p.skillGeneration : p.attackId;
@@ -207,6 +248,7 @@
         advanceShots(dt) {
             const context = this.d.h.context(), {player} = context;
             for (const p of this.d.shots) {
+                p.animationAge=this.age;
                 p.update(dt, context);
                 if (!p.active) continue;
                 const hw = (player.hitboxWidth || player.width) / 2 + p.radius;
@@ -215,6 +257,7 @@
                     p.active = false; this.d.h.playerHit?.(p);
                     if (this.finished || this.d.swarm !== this) return;
                 }
+                if(p.age>=p.lifetime-EPS)p.active=false;
             }
             this.d.shots = this.d.shots.filter(p => p.active);
         }
@@ -223,7 +266,7 @@
             else if (this.state === 'vortex') this.setState('expand');
             else if (this.state === 'expand') this.setState('line_warning');
             else if (this.state === 'line_warning') this.fireWall();
-            else if (this.state === 'line_recovery') this.setState(this.lineTurn < CONFIG.lineBursts ? 'line_warning' : 'contract');
+            else if (this.state === 'line_recovery') {if(this.lineTurn<CONFIG.lineBursts){this.fireWall();}else this.setState('contract');}
             else if (this.state === 'contract') this.setState('vortex');
             else if (this.state === 'victory') this.finish();
         }
@@ -237,12 +280,15 @@
             while (left > EPS && !this.finished && this.d.swarm === this) {
                 const vortex = this.vortexEnabled();
                 let step = Math.min(left, 16, this.duration() - this.stateAge);
+                for(const effect of this.wallLaneEffects)step=Math.min(step,Math.max(0,effect.bornAt+CONFIG.wallLaneEffectMs-this.age));
                 if (vortex) step = Math.min(step, CONFIG.vortexIntervalMs - this.vortexClock);
+                if(this.state==='line_recovery'&&this.wallRowsFired<CONFIG.wallRows)step=Math.min(step,Math.max(0,this.wallRowsFired*CONFIG.lineRecoveryMs/CONFIG.wallRows-this.stateAge));
                 if (this.state === 'enraged') step = Math.min(step,
                     (this.snipe ? CONFIG.snipePeriodMs : CONFIG.snipePeriodMs - CONFIG.snipeWarningMs) - this.snipeClock);
                 this.advanceShots(step);
                 if (this.finished || this.d.swarm !== this) break;
                 this.age += step; this.b.age = this.age; this.stateAge += step; this.d.elapsed += step; left -= step;
+                this.wallLaneEffects=this.wallLaneEffects.filter(e=>this.age-e.bornAt<CONFIG.wallLaneEffectMs-EPS);
                 this.b.hitFlash = Math.max(0, this.b.hitFlash - step);
                 if (vortex) this.vortexClock += step;
                 if (this.state === 'enraged') this.snipeClock += step;
@@ -254,12 +300,13 @@
                     if (!this.snipe && this.snipeClock >= CONFIG.snipePeriodMs - CONFIG.snipeWarningMs - EPS) this.lockSnipe();
                     if (this.snipeClock >= CONFIG.snipePeriodMs - EPS) { this.fireSnipe(); this.snipeClock -= CONFIG.snipePeriodMs; }
                 }
+                if(this.state==='line_recovery'&&this.wallRowsFired<CONFIG.wallRows&&this.stateAge+EPS>=this.wallRowsFired*CONFIG.lineRecoveryMs/CONFIG.wallRows)this.fireWallRow();
                 if (this.stateAge >= this.duration() - EPS) { this.nextState(); this.updatePose(); }
             }
         }
         beginDefeat(attack) {
             this.b.active = false; this.d.phase = 'victory'; this.d.elapsed = 0;
-            this.d.shots = []; this.safeLanes = []; this.wallColumns = []; this.snipe = null;
+            this.d.shots = []; this.wallLaneEffects = []; this.safeLanes = []; this.wallColumns = []; this.snipe = null;
             this.setState('victory');
             if (!this.d.completed.has(this.b.id)) {
                 this.d.completed.add(this.b.id);
@@ -273,7 +320,7 @@
         }
         abort() {
             this.finished = true; this.d.shots = []; this.d.warnings = []; this.d.burst = [];
-            this.safeLanes = []; this.wallColumns = []; this.snipe = null; this.parts = [];
+            this.safeLanes = []; this.wallColumns = []; this.snipe = null; this.parts = []; this.wallLaneEffects = [];
         }
         drawLaser(ctx, art, fromX, fromY, toX, toY) {
             const length = Math.hypot(toX - fromX, toY - fromY);
@@ -287,7 +334,7 @@
             if (this.finished) return;
             const {w, h} = this.d.h.context(), frame = Math.floor(this.age / CONFIG.frameMs) % 4;
             ctx.save(); ctx.imageSmoothingEnabled = false;
-            if (this.state === 'line_warning') {
+            if (this.state === 'line_warning' || this.wallLaneEffects.length) {
                 ctx.fillStyle = 'rgba(190,40,24,.10)';
                 for (const x of this.wallColumns) { ctx.fillRect(x - 8, this.b.y + 58, 16, h); this.drawLaser(ctx, art, x, this.b.y + 58, x, h); }
                 ctx.strokeStyle = '#cbd5a4'; ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
@@ -300,18 +347,22 @@
             if (this.state === 'contract') lineMix = 1 - this.stateAge / CONFIG.morphMs;
             const alpha = this.state === 'victory' ? 1 - this.stateAge / CONFIG.victoryMs : this.b.hitFlash > 0 ? .65 : 1;
             if (lineMix < 1) { ctx.globalAlpha = alpha * (1 - lineMix); art(ctx, (this.phase === 2 ? ART.enraged : ART.vortex)[frame], this.b.x, this.b.y, 256, 256); }
-            if (lineMix > 0) { ctx.globalAlpha = alpha * lineMix; art(ctx, ART.line[frame], this.b.x, this.b.y, 256 + (w - 24 - 256) * lineMix, 128); }
+            if (lineMix > 0) {
+                ctx.globalAlpha=alpha*lineMix;
+                const size=64*Math.min((w-24)/256,2)*CONFIG.shootingScale;
+                for(const f of [.125,.5,.875])drawDrone(ctx,art,12+(w-24)*f,this.b.y,size,this.age);
+            }
             ctx.globalAlpha = 1;
             for (const shot of this.d.shots) shot.draw(ctx, art);
             const width = Math.min(w - 36, 340), x = (w - width) / 2;
             ctx.fillStyle = '#111315'; ctx.fillRect(x, 146, width, 13);
             ctx.fillStyle = this.phase === 2 ? '#db422b' : '#c28033'; ctx.fillRect(x + 2, 148, (width - 4) * this.b.hp / CONFIG.maxHp, 9);
             ctx.fillStyle = '#f4edd8'; ctx.textAlign = 'center'; ctx.font = 'bold 13px monospace';
-            ctx.fillText('DRONE SWARM  ' + this.b.hp + ' / 500', w / 2, 140);
+            ctx.fillText('DRONE SWARM  ' + this.b.hp + ' / ' + this.b.maxHp, w / 2, 140);
             ctx.font = '11px monospace';
             const label = this.state === 'victory' ? 'SWARM DESTROYED' : this.phase === 2 ? 'OVERHEATING — DODGE LASERS AND FALLING DEBRIS' : this.isLine() ? 'BLOCKADE ' + Math.min(5, this.lineTurn + (this.state === 'line_warning' ? 1 : 0)) + '/5 — FIND THE GAPS' : 'TACTICAL VORTEX';
             ctx.fillText(label, w / 2, 176); ctx.restore();
         }
     }
-    return {TacticalDroneSwarm, HomingDrone, BrokenDrone, CONFIG, ART, assets};
+    return {TacticalDroneSwarm, HomingDrone, BrokenDrone, CONFIG, ART, assets, drawDrone};
 });

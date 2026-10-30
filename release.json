@@ -21,7 +21,7 @@
   "round36Boss": {
     "module": "combat/sky-fortress.js",
     "assets": "assets/bosses/sky_fortress/",
-    "hp": 500,
+    "hp": 167,
     "reward": 10000
   },
   "enemyDestructionVfx": "2026-10-28-skinline-impact-1"

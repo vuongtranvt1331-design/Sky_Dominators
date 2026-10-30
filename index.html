@@ -14,10 +14,10 @@
     <script src="skins/elder-wood-config.js?v=2026-10-28-round36-1"></script>
     <script src="skins/catalog.js?v=2026-10-29-assets-cleanup-1"></script>
     <script src="skins/runtime.js?v=2026-10-28-skyborne-1"></script>
-    <script src="combat/sky-fortress.js?v=2026-10-29-boss3-audio-1"></script>
-    <script src="combat/continental-bomber.js?v=2026-10-29-wide-helicopters-1"></script>
-    <script src="combat/drone-swarm.js?v=2026-10-29-swarm-1"></script>
-    <script src="combat/bosses.js?v=2026-10-29-wide-helicopters-1"></script>
+    <script src="combat/drone-swarm.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/sky-fortress.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/continental-bomber.js?v=2026-10-30-hp-third-1"></script>
+    <script src="combat/bosses.js?v=2026-10-30-hp-third-1"></script>
     <script src="progress/core.js?v=2026-10-28-round36-1"></script>
     <script src="progress/firestore.js?v=2026-10-28-round36-1"></script>
     <script src="progress/client.js?v=2026-10-28-round36-1"></script>
@@ -1480,7 +1480,7 @@
         #inGameHangarModal .hangar-selected-info > .crosshair-preview { width: 100%; }
         #startBtn:disabled { cursor: default; }
     </style>
-    <link rel="stylesheet" href="progress/ui.css?v=2026-10-28-skin-feedback-2">
+    <link rel="stylesheet" href="progress/ui.css?v=2026-10-30-rank-icon-2x">
 </head>
 <body>
 
@@ -2050,18 +2050,23 @@
         // =========================================================================
         // 2. PROCEDURAL WEB AUDIO SYNTHESIZER
         // =========================================================================
+        // Two existing gunshot recordings, randomly selected for each accepted player shot.
+        const PLAYER_GUNSHOT_SOURCES = ['assets/audio/player-garand-shot.mp3', 'assets/audio/boss-pkm-shot.mp3'];
+        const STANDARD_ENEMY_BULLET_SPEED = 190;
         class SoundFX {
             constructor() {
                 this.ctx = null;
                 this.muted = false;
                 this.noiseBuffer = null;
                 this.shotSounds = null;
+                this.playerShotPools = null;
+                // Preload before combat; shooting never awaits loading or an earlier voice.
+                this.setPlayerGunshotSources(PLAYER_GUNSHOT_SOURCES);
             }
 
             init() {
                 if (!this.shotSounds) {
                     const samples = {
-                        playerBullet: ['assets/audio/player-garand-shot.mp3', 0.65],
                         bossBullet: ['assets/audio/boss-pkm-shot.mp3', 0.45],
                         rocket: ['assets/audio/boss-rocket-launch.mp3', 0.65]
                     };
@@ -2076,6 +2081,7 @@
                         })
                     }]));
                 }
+                if (!this.playerShotPools) this.setPlayerGunshotSources(PLAYER_GUNSHOT_SOURCES);
                 if (!this.ghidorahRoar) {
                     this.ghidorahRoar = new Audio('assets/audio/king-ghidorah-roar-1.mp3');
                     this.ghidorahRoar.preload = 'auto';
@@ -2114,6 +2120,30 @@
                 return true;
             }
 
+            setPlayerGunshotSources(sources) {
+                this.playerShotPools = [...new Set(sources.filter(src => typeof src === 'string' && src.trim()))].slice(0, 2).map(src => ({src, voices: []}));
+                for(const pool of this.playerShotPools)for(let i=0;i<4;i++)pool.voices.push(this.createPlayerVoice(pool));
+            }
+
+            createPlayerVoice(pool) {
+                const voice=new Audio(pool.src);voice.preload='auto';voice.volume=.65;voice.shotBusy=false;
+                const release=()=>{voice.shotBusy=false;if(pool.voices.length>4)pool.voices=pool.voices.filter(v=>v!==voice);};
+                voice.addEventListener('ended',release);voice.addEventListener('error',release);voice.releaseShot=release;
+                return voice;
+            }
+
+            playPlayerShot() {
+                if(this.muted)return false;
+                this.init();const pools=this.playerShotPools;if(!pools.length)return false;
+                const pool=pools[Math.min(pools.length-1,Math.floor(Math.random()*pools.length))];
+                let voice=pool.voices.find(v=>!v.shotBusy&&(v.paused||v.ended));
+                if(!voice){voice=this.createPlayerVoice(pool);pool.voices.push(voice);}
+                // Reserve synchronously: rapid shots never restart an active voice.
+                voice.shotBusy=true;
+                try{if(voice.currentTime>0||voice.ended)voice.currentTime=0;const playing=voice.play();if(playing?.catch)playing.catch(()=>voice.releaseShot());return true;}
+                catch(e){voice.releaseShot();return false;}
+            }
+
             playShotSample(key) {
                 if (this.muted) return false;
                 this.init();
@@ -2131,7 +2161,7 @@
             }
 
             playBulletShoot(isPlayer = false) {
-                return this.playShotSample(isPlayer ? 'playerBullet' : 'bossBullet');
+                return isPlayer ? this.playPlayerShot() : this.playShotSample('bossBullet');
             }
 
             playRocketLaunch() {
@@ -3386,7 +3416,7 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.speedY = 190; // px/s downward moderate fair speed
+                this.speedY = STANDARD_ENEMY_BULLET_SPEED; // px/s downward moderate fair speed
                 this.active = true;
             }
 
@@ -3718,13 +3748,7 @@
         // AIRCRAFT OWNERSHIP — CONFIRMED PLAYER PROGRESS
         // =========================================================================
         function isAircraftUnlocked(index) { return SkyProfile.owns(index); }
-        function getNextUnlockedAircraftIndex(currentIndex, step = 1) {
-            const total=AIRCRAFT_CONFIGS.length,dir=step>=0?1:-1;
-            for(let i=1;i<=total;i++){const candidate=(currentIndex+dir*i+total*10)%total;if(isAircraftUnlocked(candidate))return candidate;}
-            return 0;
-        }
         window.isAircraftUnlocked=isAircraftUnlocked;
-        window.getNextUnlockedAircraftIndex=getNextUnlockedAircraftIndex;
 
         // Visual FX triggers
         function triggerShieldBreakEffect(x, y) {
@@ -3759,6 +3783,7 @@
                 this.modelRotation = 0; // Model orientation in game coordinates
                 this.boostTimer = 0;
                 this.shootCooldown = 0;
+                this.spaceShootCooldown = 0; // Independent manual Spacebar limit.
                 this.wraithShotIndex = 0; // Advances only for accepted Wraith shots; survives firing pauses and skin changes.
                 this.invulnerableTimer = 0;
                 this.isMovingForward = false;
@@ -4218,6 +4243,7 @@
                 this.isMovingForward = movingForward;
 
                 if (this.shootCooldown > 0) this.shootCooldown -= dt;
+                this.spaceShootCooldown = Math.max(0, this.spaceShootCooldown - dt);
                 if (this.invulnerableTimer > 0) this.invulnerableTimer = Math.max(0, this.invulnerableTimer - dt);
                 if (this.shieldFlashTimer > 0) this.shieldFlashTimer = Math.max(0, this.shieldFlashTimer - dt);
 
@@ -4292,6 +4318,7 @@
                         bullets.push(new Bullet(this.x, this.y - 30, true));
                         for (const w of this.wingmen) {
                             bullets.push(new Bullet(this.x + w.offsetX, this.y + w.offsetY - 20, true));
+                            try { audio.playShoot(); } catch (e) {}
                         }
                         try { audio.playShoot(); } catch (e) {}
 
@@ -4311,9 +4338,11 @@
                 }
             }
 
-            shoot() {
+            shoot(source = 'default') {
                 if (gameState !== 'PLAYING' || isPaused || this.hp <= 0 || this.shootCooldown > 0 || isDestinationTraveling() || (bossEncounter && !bossEncounter.canShoot)) return false;
-                this.shootCooldown = 150; // ms cooldown
+                if (source === 'space' && this.spaceShootCooldown > 0) return false;
+                if (source === 'space') this.spaceShootCooldown = 500;
+                this.shootCooldown = 150; // Existing cooldown for touch and other shot sources.
                 const cfg = AIRCRAFT_CONFIGS[this.aircraftIndex] || AIRCRAFT_CONFIGS[0];
                 const spawnY = this.y - Math.round(cfg.height / 2) - 2;
 
@@ -5744,7 +5773,7 @@
             return true;
         }
         bossEncounter = new SkyBosses.Director({
-            context:()=>({w:GAME_WIDTH,h:GAME_HEIGHT,player,bullets}),
+            context:()=>({w:GAME_WIDTH,h:GAME_HEIGHT,player,bullets,enemyBulletSpeed:STANDARD_ENEMY_BULLET_SPEED}),
             layout:()=>{
                 const field=canvas.getBoundingClientRect(),hud=document.getElementById('leftHUDContainer').getBoundingClientRect();
                 if(!field.height)return {};
@@ -5761,9 +5790,8 @@
                 document.getElementById('dangerHUDContainer').style.visibility='hidden';
             },
             resume:()=>{
-                // A boss occupies its numbered round; normal rows resume on the next one.
-                const clearedRound=Math.max(0,...SkyBosses.STAGES.filter(s=>bossEncounter.completed.has(s.id)).map(s=>s.round));
-                destroyedRowsCount=Math.max(destroyedRowsCount,clearedRound);
+                // Bosses interrupt after each ten actually cleared rows; do not add a synthetic clear.
+                // Keep the actual cleared-row count unchanged on boss completion.
                 formations=suspendedBossRows.filter(f=>!f.destroyed);suspendedBossRows=[];
                 document.getElementById('dangerHUDContainer').style.visibility='';
                 advanceToNextMission();
@@ -5779,7 +5807,7 @@
             encounterComplete:(boss,id)=>{
                 if(!boss.encounterComplete||bossRewardClaims.has(id))return;
                 bossRewardClaims.add(id);score=Math.min(999999,score+20000);
-                destroyedRowsCount=Math.max(destroyedRowsCount,boss.round);bomberHazard.endRound();updateLeftHUD();
+                bomberHazard.endRound();updateLeftHUD();
             },
             victory:claimBossVictory,
             localExplosion:(target,a)=>triggerCinematicExplosion(target.x,target.y,false,SkySkins.eliminationSkin(a?.projectile)),
@@ -5877,9 +5905,10 @@
                 bomberHazard.update(dt);
                 // Movement resolves and snaps to the latest destination before any firing attempt.
                 // Queued touch shots take priority; a failed cooldown attempt never consumes one.
-                // Space shares the same weapon and cooldown, with at most one shot attempt per update.
+                // Space has its own 500ms gate; queued touch shots retain their existing timing.
                 if (!isDestinationTraveling() && (pendingTouchShots > 0 || keys['Space'])) {
-                    if (player.shoot() && pendingTouchShots > 0) pendingTouchShots--;
+                    const fromTouch = pendingTouchShots > 0;
+                    if (player.shoot(fromTouch ? 'touch' : 'space') && fromTouch) pendingTouchShots--;
                     triggerDivingAttackIfEligible();
                 }
 
@@ -6018,16 +6047,6 @@
             }
             if (e.code === 'KeyP') {
                 togglePause();
-            }
-            // Dynamic Aircraft Selection (Keys 1 to 5, Numpad 1 to 5, or C to cycle unlocked)
-            if (e.code === 'Digit1' || e.code === 'Numpad1') player.setAircraft(0);
-            if (e.code === 'Digit2' || e.code === 'Numpad2') player.setAircraft(1);
-            if (e.code === 'Digit3' || e.code === 'Numpad3') player.setAircraft(2);
-            if (e.code === 'Digit4' || e.code === 'Numpad4') player.setAircraft(3);
-            if (e.code === 'Digit5' || e.code === 'Numpad5') player.setAircraft(4);
-            if (e.code === 'KeyC') {
-                const nextIdx = getNextUnlockedAircraftIndex(player.aircraftIndex, 1);
-                player.setAircraft(nextIdx);
             }
             if (e.code === 'KeyE' || e.code === 'KeyQ') {
                 player.triggerActiveSkill();

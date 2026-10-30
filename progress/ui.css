@@ -1,6 +1,8 @@
 /* New progress UI is scoped; aircraft artwork and combat layout are unchanged. */
 .progress-summary{display:grid;justify-items:center;gap:5px;margin:0 auto 10px;width:100%;max-width:440px;text-align:center}
-#pilotRank{display:grid;justify-items:center;gap:2px;color:#fff1b8;font:700 15px Orbitron,monospace}
+#pilotRank{display:flex;align-items:center;justify-content:center;gap:8px;max-width:100%;color:#fff1b8;font:700 15px Orbitron,monospace}
+#pilotRank>span{min-width:0;overflow-wrap:anywhere}
+#pilotRank .progress-rank-icon{width:192px;height:192px}
 .progress-rank-icon{object-fit:contain;image-rendering:pixelated;width:96px;height:96px;max-width:100%;flex:none}
 #pilotCoins{color:#facc15;font:700 14px Orbitron,monospace}
 #pilotProgress,.progress-status{font:12px/1.45 Arial,sans-serif;color:#94a3b8;overflow-wrap:anywhere}
@@ -30,12 +32,12 @@
 #inGameHangarModal .hangar-collections{grid-template-columns:minmax(0,1fr)}#inGameHangarModal .hangar-modal-box{max-width:760px}
 #inGameHangarModal #hangarConfirmBtn{white-space:normal;min-height:48px;overflow-wrap:anywhere}
 #gameOverOverlay{overflow-y:auto;justify-content:flex-start;padding-top:22px;box-sizing:border-box}
-@media(max-width:380px){.progress-table{font-size:11px}.progress-table td{padding:5px 3px}.progress-rank-cell img,.progress-aircraft-cell img{width:34px;height:34px}#pilotRank .progress-rank-icon{width:80px;height:80px}}
-@media(max-height:600px){#mainMenuLogoImg{max-height:110px!important}.progress-summary{gap:2px;margin-bottom:6px}#pilotRank .progress-rank-icon{width:64px;height:64px}#startOverlay{padding-top:6px!important}#pilotRank{font-size:12px}}
+@media(max-width:380px){.progress-table{font-size:11px}.progress-table td{padding:5px 3px}.progress-rank-cell img,.progress-aircraft-cell img{width:34px;height:34px}#pilotRank .progress-rank-icon{width:160px;height:160px}}
+@media(max-height:600px){#mainMenuLogoImg{max-height:110px!important}.progress-summary{gap:2px;margin-bottom:6px}#pilotRank .progress-rank-icon{width:128px;height:128px}#startOverlay{padding-top:6px!important}#pilotRank{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.promotion-art img{animation:none!important}.promotion-old{display:none}.promotion-new{opacity:1}}
 
 .progress-summary p{margin:0}
-@media(max-height:600px){#mainMenuLogoImg{max-height:80px!important}#pilotRank .progress-rank-icon{width:56px;height:56px}}
+@media(max-height:600px){#mainMenuLogoImg{max-height:80px!important}#pilotRank .progress-rank-icon{width:112px;height:112px}}
 
 /* Collection layout is restricted to the Hangar. */
 #inGameHangarModal .hangar-modal-box{overflow-y:auto;max-height:calc(100dvh - 20px)}
