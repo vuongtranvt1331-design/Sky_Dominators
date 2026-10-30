@@ -1,11 +1,11 @@
 {
-  "release": "2026-10-28-round36-1",
-  "baselineCommit": "29ee8fcba1ebf6721ad10df82ceb0d2557d8ed6a",
+  "release": "2026-10-30-github-ready-1",
+  "baselineCommit": "ac68d53f6db20698fcd29dbffe0c6461de2b1f66",
   "entrypoint": "index.html",
   "progressSchema": 2,
   "rankArtwork": "assets/rank-progress/",
   "vocabulary": "LexicalSpaceDB / Arcade Hub; built-in offline fallback",
-  "deployment": "GitHub Pages static files; existing Firestore rules unchanged",
+  "deployment": "GitHub Pages; existing Firebase Firestore project skydominators",
   "skinArtwork": "assets/skins/",
   "bossArtwork": "assets/bosses/",
   "skinCatalog": "skins/catalog.js",
@@ -14,15 +14,31 @@
     "skins/elder-wood-config.js"
   ],
   "bossStages": [
-    12,
-    24,
-    36
+    10,
+    20,
+    30,
+    40,
+    50
   ],
-  "round36Boss": {
-    "module": "combat/sky-fortress.js",
-    "assets": "assets/bosses/sky_fortress/",
-    "hp": 167,
-    "reward": 10000
+  "enemyDestructionVfx": "2026-10-28-skinline-impact-1",
+  "bossHealth": {
+    "1": 27,
+    "2": 53,
+    "3": 167,
+    "4": 107,
+    "5": 167
   },
-  "enemyDestructionVfx": "2026-10-28-skinline-impact-1"
+  "skyFortressBoss": {
+    "module": "combat/sky-fortress.js",
+    "hp": 167,
+    "phase1": {
+      "lanes": 5,
+      "safeLanes": 1,
+      "geometry": "fixed fan",
+      "indicationMs": 1000,
+      "damageMs": 500
+    }
+  },
+  "preparedOn": "2026-10-30",
+  "firebaseProject": "skydominators"
 }

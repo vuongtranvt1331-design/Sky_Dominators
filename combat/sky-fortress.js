@@ -388,8 +388,9 @@ const CONFIG=Object.freeze({
  // Round the cumulative old HP milestones, avoiding five rounded deductions
  // leaving the boss above its final phase floor: [300,260,220,180,140,100] / 3.
  droneHpSteps:Object.freeze([100,87,73,60,47,33]),
- intro:2000,laneWarning:1000,laneWarningStep:100,laneWarningMin:600,laneCount:5,laneRows:4,laneRowGap:250,carrierTravel:900,lanePeriod:750,leftMissilePeriod:750,leftMissileWarning:500,leftMissileBaseSpeed:190,pathWidth:10,damagedRotorSpeed:.12,droneDeployGap:450,droneDeployTime:650,droneShotGap:1000,droneWarning:1000,droneTurnRate:.38,droneSpeed:175,droneSpeedScale:1/3,componentHits:1,turretPeriod:2400,coreFailureEnd:650,collapseStart:2900,detonationStart:4400,defeatEnd:6300,victoryHold:800});
+ intro:2000,laneIndication:1000,laneDamage:500,laneCount:5,carrierTravel:900,leftMissilePeriod:750,leftMissileWarning:500,leftMissileBaseSpeed:190,pathWidth:10,damagedRotorSpeed:.12,droneDeployGap:450,droneDeployTime:650,droneShotGap:1000,droneWarning:1000,droneTurnRate:.38,droneSpeed:175,droneSpeedScale:1/3,componentHits:1,turretPeriod:2400,coreFailureEnd:650,collapseStart:2900,detonationStart:4400,defeatEnd:6300,victoryHold:800});
 const PHASE=Object.freeze({LANES:'lanes',DRONES:'drones',ROTORS:'rotors',TURRETS:'turrets',CORE:'core',FAILURE:'core_failure',CHAIN:'chain_explosions',COLLAPSE:'collapse',DETONATION:'detonation',FINISHED:'finished'});
+const LANE_STAGE=Object.freeze({INDICATE:'indicate',FIRE:'fire'});
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),ease=t=>1-Math.pow(1-clamp(t,0,1),3);
 const assetKey=file=>file.replace('sky_fortress_','').replace('.png','');
 class Encounter{
@@ -397,7 +398,7 @@ class Encounter{
   this.d=d;this.segmentBox=segmentBox;this.b=d.boss;this.phaseAge=0;this.age=0;this.defeatAge=0;this.fx=[];this.seenProjectiles=new Set();this.transitions=[];this.volley=0;this.droneCursor=0;this.droneClock=0;this.turretClock=0;this.laneClock=0;this.leftClock=0;this.finalAttack=null;this.defeatEvents=0;
   this.components=MODEL.instances.filter(x=>/^(rotor|turret)_/.test(x.id)).map(i=>({...i,artKey:assetKey(i.file),kind:i.id.startsWith('rotor')?'rotor':'turret',hp:CONFIG.componentHits,maxHp:CONFIG.componentHits,active:true,angle:0,hitFlash:0,ownerBoss:this.b}));
   this.core={id:'core',kind:'core',artKey:'weakpoint',attachment:MODEL.instances.find(i=>i.id==='weakpoint').attachment,hp:CONFIG.coreHp,maxHp:CONFIG.coreHp,active:false,angle:0,hitFlash:0,ownerBoss:this.b};
-  this.b.carrierPhase=PHASE.LANES;this.b.remainingDrones=5;this.b.defeatComplete=false;this.drones=[];this.updateGeometry();
+  this.b.carrierPhase=PHASE.LANES;this.b.remainingDrones=5;this.b.defeatComplete=false;this.drones=[];this.resetLaneSkill();this.updateGeometry();
   // Positions derive from the actual deck and modular attachment layout.
   const points=[[128,52],[128,98],[164,119],[128,210],...this.components.map(c=>c.attachment),this.core.attachment,[112,183],[143,75],[128,135]];
   this.explosionPlan=points.map((p,i)=>({at:650+i*245,point:p,size:44+(i%3)*18}));
@@ -410,7 +411,7 @@ class Encounter{
   if(next===PHASE.ROTORS){this.returnFrom={x:this.b.x,y:this.b.y};}
   if(next===PHASE.CORE){this.core.active=true;this.core.hp=Math.min(CONFIG.coreHp,this.b.hp);this.fx.push({kind:'activation',age:0,life:900,point:this.core.attachment,size:80});}
  }
- clearAttacks(preserveLeft=false){this.laneClock=0;this.droneClock=0;this.d.shots=[];this.d.warnings=preserveLeft?this.d.warnings.filter(q=>q.kind==='left_missile'):[];this.d.burst=[];if(!preserveLeft)this.leftClock=0;}
+ clearAttacks(preserveLeft=false){this.resetLaneSkill();this.droneClock=0;this.d.shots=[];this.d.warnings=preserveLeft?this.d.warnings.filter(q=>q.kind==='left_missile'):[];this.d.burst=[];if(!preserveLeft)this.leftClock=0;}
  updateGeometry(){
   const {w,h,player}=this.d.h.context(),b=this.b,layout=this.d.h.layout?.()||{},pixel=layout.unitsPerPixel||1;
   this.hudFont=Math.max(12,9*pixel);this.phaseFont=Math.max(11,8*pixel);
@@ -489,20 +490,72 @@ class Encounter{
  // Left turret owns Phase1 missiles and the telegraphed Phase3 single shots.
  leftTurret(){return this.components.find(c=>c.id==='turret_1'&&c.active);}
  missileOrigin(gun,angle){return {x:gun.x+Math.cos(angle)*gun.height*.55,y:gun.y+Math.sin(angle)*gun.height*.55};}
- fireLeftMissile(origin,angle,pathHazard=false){
-  const {h}=this.d.h.context(),speed=this.d.constructor.missileSpeed(CONFIG.leftMissileBaseSpeed);
+ fireLeftMissile(origin,angle){
+  const speed=this.d.constructor.missileSpeed(CONFIG.leftMissileBaseSpeed);
   const missile={kind:'missile',x:origin.x,y:origin.y,px:origin.x,py:origin.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,speed,angle,age:0,bornAt:this.age,sourceId:'turret_1'};
-  if(pathHazard){const length=(h-origin.y)/Math.sin(angle);missile.path={x1:origin.x,y1:origin.y,x2:origin.x+Math.cos(angle)*length,y2:h,halfWidth:CONFIG.pathWidth/2};missile.pathHit=false;}
   this.d.shots.push(missile);return missile;
+ }
+ resetLaneSkill(){
+  this.laneStage=LANE_STAGE.INDICATE;this.laneClock=0;this.lanePaths=[];this.safeLaneIndex=-1;
+  // Remove only this skill's missiles; later-phase turret attacks keep their rules.
+  this.d.shots=this.d.shots.filter(p=>!p.laneSkill);
+ }
+ laneStageDuration(){
+  return this.laneStage===LANE_STAGE.INDICATE?CONFIG.laneIndication:CONFIG.laneDamage;
+ }
+ beginLaneCycle(){
+  this.resetLaneSkill();
+  if(this.d.phase==='fight'&&this.state===PHASE.LANES&&this.b.active&&this.leftTurret())this.queueLaneVolley();
  }
  queueLaneVolley(){
   const gun=this.leftTurret();if(!gun)return;const {w,h}=this.d.h.context(),random=this.d.h.random||Math.random;
-  // One independently randomized direction in each fifth of the lower edge.
-  for(let lane=0;lane<5;lane++){
-   const targetX=(lane+.2+clamp(random(),0,1)*.6)*w/5,angle=Math.atan2(h-gun.y,targetX-gun.x);
-   this.fireLeftMissile(this.missileOrigin(gun,angle),angle,true);
+  this.safeLaneIndex=Math.min(CONFIG.laneCount-1,Math.floor(clamp(random(),0,1)*CONFIG.laneCount));
+  // Five fixed fan trajectories from the boss toward the lower edge. Lock
+  // their common origin once so hull/turret movement cannot shift the lanes.
+  // Only the safe lane changes per cycle; warning and damage share coordinates.
+  this.laneOrigin??={x:gun.x,y:gun.y+gun.height*.55};
+  this.lanePaths=Array.from({length:CONFIG.laneCount},(_,lane)=>{
+   const x=(lane+.5)*w/CONFIG.laneCount,origin=this.laneOrigin,angle=Math.atan2(h-origin.y,x-origin.x);
+   return {lane,safe:lane===this.safeLaneIndex,x1:origin.x,y1:origin.y,x2:x,y2:h,angle,halfWidth:CONFIG.pathWidth/2};
+  });
+ }
+ updateLaneSkill(dt){
+  if(this.d.phase!=='fight'||this.state!==PHASE.LANES||!this.b.active||this.b.hp<=0||!this.leftTurret()){this.resetLaneSkill();return;}
+  // update() splits at these boundaries, preserving time left over on slow frames.
+  this.laneClock+=dt;
+  if(this.laneClock+1e-7<this.laneStageDuration())return;
+  this.laneClock=0;
+  if(this.laneStage===LANE_STAGE.INDICATE){
+   this.laneStage=LANE_STAGE.FIRE;
+   for(const q of this.lanePaths)if(!q.safe){const p=this.fireLeftMissile({x:q.x1,y:q.y1},q.angle);p.laneSkill=true;p.lane=q.lane;}
+   this.volley++;this.d.h.launch?.({sourceId:'turret_1',count:this.lanePaths.length-1,safeLane:this.safeLaneIndex,at:this.age});
+  }else this.beginLaneCycle();
+ }
+ checkLaneDamage(){
+  if(this.d.phase!=='fight'||this.state!==PHASE.LANES||this.laneStage!==LANE_STAGE.FIRE||!this.b.active||!this.leftTurret())return;
+  const {player}=this.d.h.context();
+  for(const q of this.lanePaths){
+   if(q.safe)continue;
+   const hw=(player.hitboxWidth||player.width)/2+q.halfWidth,hh=(player.hitboxHeight||player.height)/2+q.halfWidth;
+   if(this.segmentBox(q.x1,q.y1,q.x2,q.y2,player.x,player.y,hw,hh)){
+    // Recheck throughout the active window. The existing player damage hook
+    // handles shields/invulnerability; crossing several paths is one hit check.
+    this.d.h.playerHit?.({kind:'missile_path',sourceId:'turret_1',x:player.x,y:player.y});return;
+   }
   }
-  this.volley++;this.d.h.launch?.({sourceId:gun.id,count:5,at:this.age});
+ }
+ drawLaneSkill(ctx){
+  if(this.d.phase!=='fight'||this.state!==PHASE.LANES||!this.b.active||!this.leftTurret())return;
+  const indicating=this.laneStage===LANE_STAGE.INDICATE;
+  ctx.save();ctx.setLineDash([]);
+  for(const q of this.lanePaths){
+   if(!indicating&&q.safe)continue;
+   const color=q.safe?'#4ade80':'#ffe34d';
+   ctx.strokeStyle=indicating?color:'#ff442f';ctx.globalAlpha=indicating?.2:.3;ctx.lineWidth=CONFIG.pathWidth;
+   ctx.beginPath();ctx.moveTo(q.x1,q.y1);ctx.lineTo(q.x2,q.y2);ctx.stroke();
+   ctx.strokeStyle=indicating?color:'#ffd28b';ctx.globalAlpha=.95;ctx.lineWidth=2;ctx.stroke();
+  }
+  ctx.restore();
  }
  warningOrigin(warning){return warning?.kind==='left_missile'?{x:warning.x,y:warning.y}:null;}
  updateLeftMissile(dt){
@@ -541,7 +594,7 @@ class Encounter{
  updateWeapons(dt){
   if(this.state===PHASE.ROTORS&&this.phaseAge<CONFIG.carrierTravel)return;
   const {player}=this.d.h.context();
-  if(this.state===PHASE.LANES){this.laneClock+=dt;if(this.laneClock>=CONFIG.lanePeriod){this.laneClock-=CONFIG.lanePeriod;this.queueLaneVolley();}}
+  if(this.state===PHASE.LANES)this.updateLaneSkill(dt);
   if(this.state===PHASE.ROTORS||this.state===PHASE.TURRETS){
    const activeDt=this.state===PHASE.ROTORS?Math.max(0,Math.min(dt,this.phaseAge-CONFIG.carrierTravel)):dt;this.updateLeftMissile(activeDt);
    // Preserve the right turret's cadence, stagger, muzzle, aim, six-shot spread and speed.
@@ -554,11 +607,9 @@ class Encounter{
    if(p.guided){const desired=Math.atan2(player.y-p.y,player.x-p.x),delta=Math.atan2(Math.sin(desired-p.angle),Math.cos(desired-p.angle)),turn=CONFIG.droneTurnRate*dt/1000;p.angle+=clamp(delta,-turn,turn);p.vx=Math.cos(p.angle)*p.speed;p.vy=Math.sin(p.angle)*p.speed;}
    const motionDt=p.bornAt===undefined?dt:Math.min(dt,Math.max(0,this.age-p.bornAt));
    p.x+=p.vx*motionDt/1000;p.y+=p.vy*motionDt/1000;p.age+=motionDt;
-   if(p.path){
-    const q=p.path,hw=(player.hitboxWidth||player.width)/2+q.halfWidth,hh=(player.hitboxHeight||player.height)/2+q.halfWidth;
-    if(!p.pathHit&&this.segmentBox(q.x1,q.y1,q.x2,q.y2,player.x,player.y,hw,hh)){p.pathHit=true;this.d.h.playerHit?.({...p,kind:'missile_path',x:player.x,y:player.y});if(this.d.fortress!==this||this.d.phase!=='fight')return;}
-    // Keep the complete path visible/active for its missile's in-viewport flight.
-    if(p.age>9000||p.x<0||p.x>w||p.y<0||p.y>h)this.d.shots.splice(i,1);continue;
+   if(p.laneSkill){
+    // Phase1 collision belongs to the timed path, never the moving sprite.
+    if(this.laneStage!==LANE_STAGE.FIRE||p.x<0||p.x>w||p.y<0||p.y>h)this.d.shots.splice(i,1);continue;
    }
    if(this.segmentBox(p.px,p.py,p.x,p.y,player.x,player.y,player.hitboxWidth*.39,player.hitboxHeight*.325)){this.d.shots.splice(i,1);this.d.h.playerHit?.(p);if(this.d.fortress!==this||this.d.phase!=='fight')return;}
    else if(p.age>9000||p.x<-60||p.x>w+60||p.y<-80||p.y>h+80)this.d.shots.splice(i,1);
@@ -582,10 +633,10 @@ class Encounter{
   this.age+=dt;this.d.elapsed+=dt;this.b.age=this.age;this.phaseAge+=dt;this.b.hitFlash=Math.max(0,(this.b.hitFlash||0)-dt);
   for(const t of [...this.components,...this.drones,this.core])t.hitFlash=Math.max(0,t.hitFlash-dt);
   for(const f of this.fx)f.age+=dt;this.fx=this.fx.filter(f=>f.age<f.life);
-  if(this.d.phase==='intro'){this.updateGeometry();if(this.d.elapsed>=CONFIG.intro){this.d.phase='fight';this.d.elapsed=0;this.phaseAge=0;this.queueLaneVolley();}return;}
+  if(this.d.phase==='intro'){this.updateGeometry();if(this.d.elapsed>=CONFIG.intro){this.d.phase='fight';this.d.elapsed=0;this.phaseAge=0;this.beginLaneCycle();}return;}
   if(this.d.phase==='defeat'){this.updateDefeat(dt);return;}
   if(this.d.phase==='victory'){if(this.d.elapsed>=CONFIG.victoryHold){this.clearAttacks();this.components=[];this.drones=[];this.fx=[];this.d.phase='regular';this.d.boss=null;this.d.fortress=null;this.d.h.resume?.();}return;}
-  this.updateGeometry();if(this.state===PHASE.DRONES)this.updateDrones(dt);this.updateWeapons(dt);this.processPlayerShots();if(this.d.phase==='fight')this.updateEnemyShots(dt);
+  this.updateGeometry();if(this.state===PHASE.DRONES)this.updateDrones(dt);this.updateWeapons(dt);this.processPlayerShots();if(this.d.phase==='fight'){this.checkLaneDamage();if(this.d.fortress===this&&this.d.phase==='fight')this.updateEnemyShots(dt);}
  }
  update(dt){
   let left=Math.max(0,Number.isFinite(dt)?dt:0);if(!left){this.step(0);return;}
@@ -594,7 +645,7 @@ class Encounter{
    if(this.d.phase==='intro')slice=Math.min(slice,CONFIG.intro-this.d.elapsed);
    if(this.d.phase==='fight'){
     for(const q of this.d.warnings)slice=Math.min(slice,Math.max(0,q.duration-q.age));
-    if(this.state===PHASE.LANES)slice=Math.min(slice,Math.max(0,CONFIG.lanePeriod-this.laneClock));
+    if(this.state===PHASE.LANES)slice=Math.min(slice,Math.max(0,this.laneStageDuration()-this.laneClock));
     if((this.state===PHASE.ROTORS||this.state===PHASE.TURRETS)&&this.leftTurret()){
      if(this.state===PHASE.ROTORS&&this.phaseAge<CONFIG.carrierTravel)slice=Math.min(slice,CONFIG.carrierTravel-this.phaseAge);
      else {const pending=this.d.warnings.some(q=>q.kind==='left_missile');slice=Math.min(slice,Math.max(0,(pending?CONFIG.leftMissilePeriod:CONFIG.leftMissilePeriod-CONFIG.leftMissileWarning)-this.leftClock));}
@@ -616,7 +667,7 @@ class Encounter{
    ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(x,y);ctx.stroke();ctx.globalAlpha=.8;ctx.lineWidth=2;ctx.setLineDash([8,7]);
    ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(x,y);ctx.stroke();ctx.restore();
   }
-  for(const p of this.d.shots)if(p.path){const q=p.path;ctx.save();ctx.strokeStyle='#ff442f';ctx.globalAlpha=.3;ctx.lineWidth=CONFIG.pathWidth;ctx.beginPath();ctx.moveTo(q.x1,q.y1);ctx.lineTo(q.x2,q.y2);ctx.stroke();ctx.globalAlpha=.95;ctx.strokeStyle='#ffd28b';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+  this.drawLaneSkill(ctx);
   const visible=this.d.phase!=='victory'&&this.defeatAge<CONFIG.detonationStart+1500;
   if(visible){const alpha=this.d.phase==='defeat'&&this.defeatAge>=CONFIG.detonationStart?1-ease((this.defeatAge-CONFIG.detonationStart)/1500):1;
    this.drawPart(ctx,art,b,'hull',alpha);
@@ -631,9 +682,9 @@ class Encounter{
   for(const p of this.d.shots){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle+Math.PI/2);art(ctx,p.kind==='missile'?MODEL.art.missile.file:'assets/bosses/boss2/projectiles/boss01_gun_projectile.png',0,0,p.kind==='missile'?12:9,p.kind==='missile'?32:20);ctx.restore();}
   if(this.d.phase==='defeat'&&this.defeatAge>=CONFIG.detonationStart){const t=(this.defeatAge-CONFIG.detonationStart)/1800,size=256*this.baseScale*(.65+1.15*ease(t));ctx.save();ctx.globalAlpha=clamp(1-t,0,1);art(ctx,MODEL.art.explosion.file,b.x,b.y,size,size);ctx.strokeStyle='#fff0bf';ctx.lineWidth=8*(1-t);ctx.beginPath();ctx.arc(b.x,b.y,size*.47,0,Math.PI*2);ctx.stroke();if(t<.16){ctx.globalAlpha=(1-t/.16)*.45;ctx.fillStyle='#fff2cd';ctx.fillRect(0,0,w,h);}ctx.restore();}
   const width=Math.min(w-36,300),x=(w-width)/2;ctx.fillStyle='#0f172a';ctx.fillRect(x,this.hudY+6,width,13);ctx.fillStyle='#f59e0b';ctx.fillRect(x+2,this.hudY+8,(width-4)*b.hp/b.maxHp,9);ctx.fillStyle='#fff';ctx.font='bold '+this.hudFont+'px monospace';ctx.textAlign='center';ctx.fillText('SKY FORTRESS  '+b.hp+' / '+b.maxHp,w/2,this.hudY);
-  const labels={lanes:'AVOID THE FIVE MISSILE PATHS',drones:'DRONES REMAINING: '+b.remainingDrones,rotors:'DESTROY THE FOUR ROTORS',turrets:'DESTROY THE TWO TURRETS',core:'CENTRAL CORE EXPOSED',core_failure:'CORE FAILURE',chain_explosions:'CARRIER COLLAPSING',collapse:'CARRIER COLLAPSING',detonation:'SKY DETONATION',finished:'ROUND '+b.round+' CLEARED  +10,000'};ctx.font='bold '+this.phaseFont+'px monospace';ctx.fillText(labels[this.state]||'',w/2,this.phaseY);
+  const labels={lanes:'YELLOW: DANGER — GREEN: SAFE',drones:'DRONES REMAINING: '+b.remainingDrones,rotors:'DESTROY THE FOUR ROTORS',turrets:'DESTROY THE TWO TURRETS',core:'CENTRAL CORE EXPOSED',core_failure:'CORE FAILURE',chain_explosions:'CARRIER COLLAPSING',collapse:'CARRIER COLLAPSING',detonation:'SKY DETONATION',finished:'ROUND '+b.round+' CLEARED  +10,000'};ctx.font='bold '+this.phaseFont+'px monospace';ctx.fillText(labels[this.state]||'',w/2,this.phaseY);
   if(this.d.phase==='intro'){ctx.fillStyle='#fbbf24';ctx.font='bold 20px monospace';ctx.fillText('ROUND '+b.round,w/2,h*.64);ctx.font='bold 15px monospace';ctx.fillText('SKY FORTRESS APPROACHING',w/2,h*.68);}ctx.restore();
  }
 }
-return{Encounter,CONFIG,PHASE,MODEL,assets:Object.entries(MODEL.art).filter(([key])=>!key.startsWith('drone')).map(([,x])=>x.file)};
+return{Encounter,CONFIG,PHASE,LANE_STAGE,MODEL,assets:Object.entries(MODEL.art).filter(([key])=>!key.startsWith('drone')).map(([,x])=>x.file)};
 });
