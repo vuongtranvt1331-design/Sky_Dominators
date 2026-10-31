@@ -1,19 +1,25 @@
-# Sky Dominators (Air Strike: Tactical Flight Combat)
+# Sky Dominators
 
-Retro 8-bit tactical flight combat vocabulary game integrated with **Lexical Space** via IndexedDB and global persistent sortie leaderboards via **Google Firebase Cloud Firestore**.
+Production game files, including the latest Boss 5 update.
 
-## 🚀 Production Deployment
-- **Play Online:** [https://vuongtranvt1331-design.github.io/Sky_Dominators/](https://vuongtranvt1331-design.github.io/Sky_Dominators/)
-- **Arcade Hub:** [https://vuongtranvt1331-design.github.io/Arcadehub/](https://vuongtranvt1331-design.github.io/Arcadehub/)
-- **Lexical Space:** [https://vuongtranvt1331-design.github.io/Lexical_Space/](https://vuongtranvt1331-design.github.io/Lexical_Space/)
+## Run locally
 
-## ☁️ Firebase Cloud Firestore Configuration
-- **Project ID:** `skydominators`
-- **Collections:**
-  - `leaderboard/{matchId}`: Global sortable sortie telemetry with rank medals.
-  - `legends/{nickname}`: Permanent Hall of Fame ensuring historical #1 achievement badges are never lost.
+Install Node.js 18 or newer, then double-click `start-local.bat` on Windows. On macOS use `start-local.command`; on Linux run `sh start-local.sh`. Alternatively run `npm start` from this folder. No dependency installation is required.
 
-## 📚 Shared IndexedDB Vocabulary
-- **Database:** `LexicalSpaceDB` (v1)
-- **Object Store:** `words`
-- **Protocol:** Read-only access preserving student progress, with instant fallback to a built-in 30-word academic IELTS deck when offline.
+The launcher opens the game at a local address and keeps it available until the terminal is closed.
+
+## GitHub Pages
+
+Place the contents of this folder at your existing game repository's publishing root. Keep `index.html`, `.nojekyll`, `css/`, `js/` and `assets/` together. Configure Pages to publish that root. No build step is required.
+
+The game keeps its existing Firebase configuration and player-data logic. Cloud features require internet access. This folder contains no player database export, test pages, test reports, logs or backups.
+
+## Structure
+
+- `index.html`: main game entrypoint.
+- `css/`: menu and game styles.
+- `js/`: game systems, aircraft, bosses, skins and persistence.
+- `assets/`: referenced artwork, animation frames and audio.
+- `tools/dev-server.cjs` and `start-local.*`: local startup helpers.
+
+Release: 2026-11-01-boss5-phases-1.
