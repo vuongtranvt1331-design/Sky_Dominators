@@ -143,18 +143,54 @@
     }
     class ExaltedRenderer {
         constructor(){this.ready=false;this.error=null;this.loading=null;this.bodyLoading=null;this.preview=null;this.assetErrors={};this.textures={};this.eliminationFrames=[];this.frames=new WeakMap();}
-        load(){
-            if(this.loading)return this.loading;
-            this.error=null;this.assetErrors={};
-            // Retry transient image/CDN failures with a fresh URL. No animation timer or loop is created.
-            const request=(id,spec)=>new Promise((resolve,reject)=>{
+        requestImage(spec){
+            return new Promise((resolve,reject)=>{
                 const attempt=n=>{
                     const img=new Image();
                     img.onload=()=>resolve(img);
                     img.onerror=()=>n<2?attempt(n+1):reject(Error('Exalted asset unavailable: '+spec.file));
-                    img.src=spec.file+'?v=2026-11-01-exalted-assets-7'+(n?'&retry='+n:'');
+                    img.src=spec.file+'?v=2026-11-01-exalted-animation-8'+(n?'&retry='+n:'');
                 };attempt(0);
             });
+        }
+        load(){
+            if(this.loading)return this.loading;
+            this.error=null;this.assetErrors={};this.atlasError=null;
+            // The production atlas contains the exact preprocessed pixel textures. Loading it
+            // requires no canvas readback, flood fill, background removal or large source sheets.
+            const complete=this.loadAtlas().catch(error=>{
+                this.atlasError=error.message;
+                return this.loadSourceSheets();
+            });
+            this.bodyLoading=complete;
+            this.loading=complete.then(()=>{
+                if(Object.keys(this.assetErrors).length)this.loading=null;
+                return this;
+            }).catch(error=>{this.error=error;this.loading=null;throw error;});
+            return this.loading;
+        }
+        async loadAtlas(){
+            const spec=CONFIG.runtimeAtlas;
+            if(!spec)throw Error('Exalted runtime atlas is not configured');
+            const img=await this.requestImage(spec);
+            if(img.naturalWidth!==spec.size[0]||img.naturalHeight!==spec.size[1])throw Error('Unexpected Exalted atlas dimensions');
+            const textures={},effects=[];
+            for(const id of [...CONFIG.parts.map(p=>p.id),'halo','mark','projectile',...Array.from({length:CONFIG.elimination.count},(_,i)=>'elimination'+i)]){
+                const rect=spec.regions[id];
+                if(!rect||rect.length!==4)throw Error('Missing Exalted atlas region: '+id);
+                const [x,y,w,h]=rect;
+                if(x<0||y<0||w<=0||h<=0||x+w>img.naturalWidth||y+h>img.naturalHeight)throw Error('Invalid Exalted atlas region: '+id);
+                const c=canvas(w,h),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
+                ctx.drawImage(img,x,y,w,h,0,0,w,h);
+                if(id.startsWith('elimination'))effects[Number(id.slice(11))]=c;else textures[id]=c;
+            }
+            // Publish a complete set together so no partially loaded wings/halo get cached.
+            this.textures=textures;this.eliminationFrames=effects;this.frames=new WeakMap();
+            this.loadMode='atlas';this.ready=true;return this;
+        }
+        loadSourceSheets(){
+            // Preserve the existing source-sheet path as a fallback if the atlas cannot load.
+            const request=(_id,spec)=>this.requestImage(spec);
             const sheet=(img,id)=>{
                 const data=pixels(img),size=CONFIG.assets[id].size;
                 if(data.width!==size[0]||data.height!==size[1])throw Error('Unexpected Exalted sheet dimensions: '+id);
@@ -186,11 +222,7 @@
                     }
                 }catch(error){this.assetErrors[id]=error.message;}
             });
-            this.loading=Promise.all([this.bodyLoading,...effects]).then(()=>{
-                if(Object.keys(this.assetErrors).length)this.loading=null;
-                return this;
-            }).catch(error=>{this.error=error;this.loading=null;throw error;});
-            return this.loading;
+            return Promise.all([this.bodyLoading,...effects]).then(()=>{this.loadMode='source-sheets';return this;});
         }
         frameFor(controller){
             let cached=this.frames.get(controller);

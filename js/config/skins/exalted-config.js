@@ -18,6 +18,105 @@
     "texturePixelsPerUnit": 1,
     "imageSmoothing": false
   },
+  "runtimeAtlas": {
+    "file": "assets/skins/exalted/runtime-atlas.png",
+    "size": [
+      512,
+      164
+    ],
+    "regions": {
+      "burstLeft": [
+        1,
+        1,
+        36,
+        38
+      ],
+      "burstRight": [
+        39,
+        1,
+        36,
+        38
+      ],
+      "frontLeft": [
+        77,
+        1,
+        35,
+        46
+      ],
+      "frontRight": [
+        114,
+        1,
+        35,
+        46
+      ],
+      "rearLeft": [
+        151,
+        1,
+        28,
+        42
+      ],
+      "rearRight": [
+        181,
+        1,
+        28,
+        42
+      ],
+      "tail": [
+        211,
+        1,
+        17,
+        22
+      ],
+      "body": [
+        230,
+        1,
+        22,
+        44
+      ],
+      "halo": [
+        254,
+        1,
+        96,
+        96
+      ],
+      "mark": [
+        352,
+        1,
+        96,
+        53
+      ],
+      "projectile": [
+        450,
+        1,
+        8,
+        32
+      ],
+      "elimination0": [
+        1,
+        99,
+        64,
+        64
+      ],
+      "elimination1": [
+        67,
+        99,
+        64,
+        64
+      ],
+      "elimination2": [
+        133,
+        99,
+        64,
+        64
+      ],
+      "elimination3": [
+        199,
+        99,
+        64,
+        64
+      ]
+    }
+  },
   "assets": {
     "preview": {"file":"assets/skins/exalted/idle-preview.png","size":[160,160],"background":"transparent"},
     "parts": {
