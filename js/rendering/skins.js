@@ -4,7 +4,7 @@
 const catalog=SkySkinCatalog,images=new Map(),fx=[],aliases={projectile:['projectile','frozen_projectile'],engine:['engine_afterburner','engine_flight','engine_idle'],impact:['impact','ice_impact','impact_sparks'],elimination:['elimination','frozen_destruction','destruction_particles']};let clock=0;
 function image(path){if(!path)return null;if(!images.has(path)){const img=new Image();img.decoding='async';img.src=path;images.set(path,img);}return images.get(path);}
 function ready(img){return !!(img?.complete&&img.naturalWidth);}
-function path(index,id){const cfg=AIRCRAFT_CONFIGS[index]||AIRCRAFT_CONFIGS[0];return id==='factory_default'||id==='exalted'?cfg.file:catalog.bodies[cfg.key]?.[id]||cfg.file;}
+function path(index,id){const cfg=AIRCRAFT_CONFIGS[index]||AIRCRAFT_CONFIGS[0];return id==='factory_default'?cfg.file:catalog.bodies[cfg.key]?.[id]||cfg.file;}
 function sequence(id,category){if(id==='money_printer'&&category==='projectile'){const coin=catalog.animations.find(a=>a.id==='assets/effects/money_printer/projectiles/projectile_arcade_coin_gold');if(coin)return coin;}const cats=aliases[category]||[category];for(const c of cats){const a=catalog.animations.find(a=>a.skin_line===id&&a.category===c&&!a.id.includes('/bomber/'));if(a)return a;}return null;}
 function animationFrame(a,t=clock){if(!a)return null;const total=a.frame_ms.reduce((n,v)=>n+v,0);let at=a.loop?t%total:Math.min(t,total-1),i=0;while(i<a.frames.length-1&&at>=a.frame_ms[i]){at-=a.frame_ms[i++];}return image(a.frames[i]);}
 function frame(id,category,t=clock){return animationFrame(sequence(id,category),t);}
@@ -100,7 +100,7 @@ function enemyDestructionSequence(id){
 }
 function enemyDestruction(id,x,y,isBig){
  if(id==='exalted'){
-  if(!SkyExalted.renderer.ready)return false;
+  if(!SkyExalted.renderer.ready||!SkyExalted.renderer.eliminationFrames.length)return false;
   const spec=SkyExalted.CONFIG.elimination;if(fx.length>=72)fx.shift();
   fx.push({id,category:'exalted_elimination',x,y,size:isBig?spec.bigSize:spec.size,age:0,life:spec.durationMs});return true;
  }

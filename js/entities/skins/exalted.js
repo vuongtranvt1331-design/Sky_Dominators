@@ -142,26 +142,53 @@
         ctx.imageSmoothingEnabled=false;ctx.drawImage(img,left,top,right-left,bottom-top,0,0,c.width,c.height);return c;
     }
     class ExaltedRenderer {
-        constructor(){this.ready=false;this.error=null;this.loading=null;this.textures={};this.eliminationFrames=[];this.frames=new WeakMap();}
+        constructor(){this.ready=false;this.error=null;this.loading=null;this.bodyLoading=null;this.preview=null;this.assetErrors={};this.textures={};this.eliminationFrames=[];this.frames=new WeakMap();}
         load(){
             if(this.loading)return this.loading;
-            this.error=null;
-            this.loading=Promise.all(Object.entries(CONFIG.assets).map(([id,spec])=>new Promise((resolve,reject)=>{
-                const img=new Image();img.onload=()=>resolve([id,img]);img.onerror=()=>reject(Error('Exalted asset unavailable: '+spec.file));img.src=spec.file;
-            }))).then(entries=>{
-                const sources=Object.fromEntries(entries),sheets={parts:pixels(sources.parts),burstWings:pixels(sources.burstWings)};
-                for(const [id,data]of Object.entries(sheets))if(data.width!==CONFIG.assets[id].size[0]||data.height!==CONFIG.assets[id].size[1])throw Error('Unexpected Exalted sheet dimensions: '+id);
-                for(const part of CONFIG.parts)this.textures[part.id]=partTexture(sheets[part.asset||'parts'],part);
-                this.textures.halo=overlayTexture(sources.halo,CONFIG.assets.halo,96);
-                this.textures.mark=overlayTexture(sources.mark,CONFIG.assets.mark,96);
-                this.textures.projectile=projectileTexture(sources.projectile);
-                const effect=CONFIG.elimination,[fw,fh]=effect.frameSize,img=sources.elimination;
-                if(img.naturalWidth!==fw*effect.columns||img.naturalHeight!==fh*effect.rows)throw Error('Unexpected Exalted effect sheet dimensions');
-                this.eliminationFrames=Array.from({length:effect.count},(_,i)=>{
-                    const c=canvas(effect.pixelSize,effect.pixelSize),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
-                    ctx.drawImage(img,i%effect.columns*fw,Math.floor(i/effect.columns)*fh,fw,fh,0,0,c.width,c.height);return c;
-                });
-                this.ready=true;return this;
+            this.error=null;this.assetErrors={};
+            // Retry transient image/CDN failures with a fresh URL. No animation timer or loop is created.
+            const request=(id,spec)=>new Promise((resolve,reject)=>{
+                const attempt=n=>{
+                    const img=new Image();
+                    img.onload=()=>resolve(img);
+                    img.onerror=()=>n<2?attempt(n+1):reject(Error('Exalted asset unavailable: '+spec.file));
+                    img.src=spec.file+'?v=2026-11-01-exalted-assets-7'+(n?'&retry='+n:'');
+                };attempt(0);
+            });
+            const sheet=(img,id)=>{
+                const data=pixels(img),size=CONFIG.assets[id].size;
+                if(data.width!==size[0]||data.height!==size[1])throw Error('Unexpected Exalted sheet dimensions: '+id);
+                return data;
+            };
+            // Body and four normal wings must not wait for unrelated skill/projectile effects.
+            this.bodyLoading=request('parts',CONFIG.assets.parts).then(img=>{
+                const source=sheet(img,'parts');
+                for(const part of CONFIG.parts.filter(p=>!p.asset))this.textures[part.id]=partTexture(source,part);
+                this.frames=new WeakMap();this.ready=true;return this;
+            });
+            const effects=Object.entries(CONFIG.assets).filter(([id])=>id!=='parts').map(async([id,spec])=>{
+                try{
+                    const img=await request(id,spec);
+                    if(id==='preview')this.preview=img;
+                    else if(id==='burstWings'){
+                        const source=sheet(img,id),textures={};
+                        for(const part of CONFIG.parts.filter(p=>p.asset===id))textures[part.id]=partTexture(source,part);
+                        Object.assign(this.textures,textures);this.frames=new WeakMap();
+                    }else if(id==='halo'||id==='mark')this.textures[id]=overlayTexture(img,spec,96);
+                    else if(id==='projectile')this.textures.projectile=projectileTexture(img);
+                    else if(id==='elimination'){
+                        const effect=CONFIG.elimination,[fw,fh]=effect.frameSize;
+                        if(img.naturalWidth!==fw*effect.columns||img.naturalHeight!==fh*effect.rows)throw Error('Unexpected Exalted effect sheet dimensions');
+                        this.eliminationFrames=Array.from({length:effect.count},(_,i)=>{
+                            const c=canvas(effect.pixelSize,effect.pixelSize),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;
+                            ctx.drawImage(img,i%effect.columns*fw,Math.floor(i/effect.columns)*fh,fw,fh,0,0,c.width,c.height);return c;
+                        });
+                    }
+                }catch(error){this.assetErrors[id]=error.message;}
+            });
+            this.loading=Promise.all([this.bodyLoading,...effects]).then(()=>{
+                if(Object.keys(this.assetErrors).length)this.loading=null;
+                return this;
             }).catch(error=>{this.error=error;this.loading=null;throw error;});
             return this.loading;
         }
@@ -173,6 +200,7 @@
             for(const spec of CONFIG.parts){
                 if(spec.visibleWhen==='skillActive'&&!controller.skillActive)continue;
                 const p=controller.poses[spec.id],texture=this.textures[spec.id];
+                if(!texture)continue;
                 const [jx,jy]=controller.jitter[spec.id]||[0,0];
                 ctx.save();ctx.translate(Math.round(p.x)+jx,Math.round(p.y)+jy);ctx.rotate(p.angle);
                 ctx.drawImage(texture,-p.w/2,-p.h/2,p.w,p.h);
@@ -186,7 +214,7 @@
             ctx.save();ctx.imageSmoothingEnabled=false;
             ctx.drawImage(this.frameFor(controller),-80*scale,-80*scale,160*scale,160*scale);
             // Visibility is checked on EVERY draw, including between animation ticks and after collisions.
-            if(controller.haloVisible(input)){
+            if(this.textures.halo&&controller.haloVisible(input)){
                 ctx.save();ctx.globalAlpha=controller.haloOpacity;ctx.translate(CONFIG.halo.offset[0]*scale,CONFIG.halo.offset[1]*scale);ctx.rotate(controller.haloAngle);
                 const size=CONFIG.halo.diameter*controller.haloScale*scale;ctx.drawImage(this.textures.halo,-size/2,-size/2,size,size);ctx.restore();
             }
@@ -194,7 +222,7 @@
         }
         drawProjectile(ctx,shot){
             if(!this.ready||shot.skinId!=='exalted'||shot.attackerKey!=='fighter_1'||shot.isSpecial)return false;
-            const texture=this.textures.projectile;
+            const texture=this.textures.projectile;if(!texture)return false;
             ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(shot.x,shot.y);
             ctx.rotate(Math.atan2(shot.vy,shot.vx)+Math.PI/2);
             ctx.drawImage(texture,-texture.width/2,-texture.height/2,texture.width,texture.height);ctx.restore();return true;
@@ -208,7 +236,7 @@
         }
         drawMarks(ctx,controller,targets,boxFor){
             if(!this.ready)return;
-            const texture=this.textures.mark;
+            const texture=this.textures.mark;if(!texture)return;
             ctx.save();ctx.imageSmoothingEnabled=false;
             for(const target of targets){
                 const box=boxFor(target);
@@ -231,7 +259,13 @@
     }
     function drawBody(ctx,p,cfg){
         if(!supported(p))return false;
-        const c=controllerFor(p);c.skillActive=p.skillActiveTimer>0&&p.hp>0;return renderer.draw(ctx,c,cfg.height,playerInput(p));
+        const c=controllerFor(p);c.skillActive=p.skillActiveTimer>0&&p.hp>0;
+        if(renderer.draw(ctx,c,cfg.height,playerInput(p)))return true;
+        // Use the exported real Exalted idle frame while the composite sheet is unavailable.
+        const img=renderer.preview||p.aircraftImage;
+        if(p.hp<=0||!img?.complete||!img.naturalWidth||!img.src.includes(CONFIG.assets.preview.file))return false;
+        const size=160*cfg.height/CONFIG.animation.referenceHeight;
+        ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(img,-size/2,-size/2,size,size);ctx.restore();return true;
     }
     function drawTarget(ctx,p,boss,boxFor){
         if(!supported(p))return;
@@ -265,13 +299,15 @@
                 const wrapper=document.createElement('span');wrapper.className='exalted-preview';
                 const overlay=canvas(160,160);overlay.setAttribute('aria-hidden','true');
                 img.replaceWith(wrapper);wrapper.append(img,overlay);
-                // The image reserves layout space; it is not Exalted artwork.
-                img.style.opacity='0';
+                // The normal image is the real Exalted idle frame; keep it visible until the canvas is painted.
+                img.style.opacity='';
                 entry={wrapper,overlay,controller:new ExaltedAnimationController(),last:now,frame:-1};previews.set(img,entry);
                 // Paint the first frame as soon as artwork is ready, even before the host loop starts.
                 // Subsequent animation still uses the existing game loop, with no extra timer or RAF.
-                preload().then(()=>drawPreview(img,entry)).catch(()=>{
-                    if(img.isConnected&&img.dataset.skinId==='exalted'&&img.parentElement===wrapper)wrapper.dataset.error='artwork unavailable';
+                const complete=preload();
+                renderer.bodyLoading.then(()=>drawPreview(img,entry)).catch(()=>{});
+                complete.then(()=>{entry.frame=-1;drawPreview(img,entry);}).catch(()=>{
+                    if(img.isConnected&&img.dataset.skinId==='exalted'&&img.parentElement===wrapper){wrapper.dataset.error='animated artwork unavailable';img.style.opacity='';}
                 });
             }
             const dt=Math.max(0,Math.min(100,now-entry.last));entry.last=now;entry.controller.update(dt);

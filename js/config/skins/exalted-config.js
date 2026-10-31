@@ -19,6 +19,7 @@
     "imageSmoothing": false
   },
   "assets": {
+    "preview": {"file":"assets/skins/exalted/idle-preview.png","size":[160,160],"background":"transparent"},
     "parts": {
       "file": "assets/skins/exalted/aircraft-parts.png",
       "size": [

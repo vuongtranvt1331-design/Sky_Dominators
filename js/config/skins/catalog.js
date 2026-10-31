@@ -22,5 +22,5 @@ catalog.animations.push({id:'skyborne/flight',skin_line:'skyborne',category:'fli
 catalog.lines.push({id:'ornithopter',name:'Ornithopter',price:2000,rarity:'LEGEND',aircraft:['corsair']});
 catalog.bodies.corsair.ornithopter='assets/skins/ornithopter/fuselage.png';
 catalog.lines.push({id:'exalted',name:'Exalted',price:3500,rarity:null,aircraft:['fighter_1']});
-catalog.bodies.fighter_1.exalted='assets/skins/exalted/aircraft-parts.png';
+catalog.bodies.fighter_1.exalted='assets/skins/exalted/idle-preview.png';
 return catalog;});
