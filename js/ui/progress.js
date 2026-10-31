@@ -64,7 +64,7 @@ function renderHangar(){
  for(const index of getHangarAircraftOrder()){
   const c=AIRCRAFT_CONFIGS[index],ready=P.owns(index),item=el('button','hangar-thumb-item'+(index===selectedHangarIndex?' is-selected':'')+(!ready?' is-locked':''));item.type='button';item.dataset.index=index;item.dataset.locked=String(!ready);item.setAttribute('aria-pressed',String(index===selectedHangarIndex));
   const image=el('img','hangar-thumb-img');image.src=c.file;image.alt='';const copy=el('span');copy.append(el('span','hangar-card-name',c.name),el('span','hangar-card-status',ready?'OWNED':'LOCKED · 500 COINS'));item.append(image,copy);item.addEventListener('click',()=>selectHangarAircraft(index));list.append(item);
- }list.scrollTop=scroll;renderSkins();
+ }list.scrollTop=scroll;renderSkins();SkyExalted.updatePreviews(performance.now());
 }
 function renderSkins(){
  const index=selectedHangarIndex,cfg=AIRCRAFT_CONFIGS[index],current=P.skin(index);inspectedSkin=inspectedSkin&&C.skinCompatible(index,inspectedSkin)?inspectedSkin:current;
@@ -122,7 +122,7 @@ function showResult(flight){
  shownFlight=flight;
  text('finalScoreText',String(flight.score).padStart(6,'0'));text('finalTargetsText',flight.targetsCleared);text('finalIntervalText',(spawnInterval/1000).toFixed(2)+'s');
  const cfg=AIRCRAFT_CONFIGS[flight.aircraftIndex],skinId=player.skinId||'factory_default',image=$('gameOverAircraftImg');image.src=SkySkins.path(flight.aircraftIndex,skinId);image.dataset.skinId=skinId;image.dataset.aircraftKey=cfg.key;text('gameOverAircraftName',cfg.name.toUpperCase());
- $('detailedRecordsOverlay').classList.add('hidden');$('gameOverOverlay').classList.remove('hidden');renderResult();
+ $('detailedRecordsOverlay').classList.add('hidden');$('gameOverOverlay').classList.remove('hidden');renderResult();SkyExalted.updatePreviews(performance.now());
 }
 function renderResult(){
  text('finalSortiesCountText',P.state.qualifyingFlights);

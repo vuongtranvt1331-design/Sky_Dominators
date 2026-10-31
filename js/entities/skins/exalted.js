@@ -145,6 +145,7 @@
         constructor(){this.ready=false;this.error=null;this.loading=null;this.textures={};this.eliminationFrames=[];this.frames=new WeakMap();}
         load(){
             if(this.loading)return this.loading;
+            this.error=null;
             this.loading=Promise.all(Object.entries(CONFIG.assets).map(([id,spec])=>new Promise((resolve,reject)=>{
                 const img=new Image();img.onload=()=>resolve([id,img]);img.onerror=()=>reject(Error('Exalted asset unavailable: '+spec.file));img.src=spec.file;
             }))).then(entries=>{
@@ -161,7 +162,7 @@
                     ctx.drawImage(img,i%effect.columns*fw,Math.floor(i/effect.columns)*fh,fw,fh,0,0,c.width,c.height);return c;
                 });
                 this.ready=true;return this;
-            }).catch(error=>{this.error=error;throw error;});
+            }).catch(error=>{this.error=error;this.loading=null;throw error;});
             return this.loading;
         }
         frameFor(controller){
@@ -243,6 +244,17 @@
         if(!supported(p)||projectile?.skinId!=='exalted'||p.skillActiveTimer<=0||p.hp<=0)return;
         const c=controllerFor(p);c.skillActive=true;c.markHit(target);
     }
+    function drawPreview(img,entry){
+        // A pending load must not paint into a removed card or a different selected skin.
+        if(!img.isConnected||img.dataset.skinId!=='exalted'||img.parentElement!==entry.wrapper||!renderer.ready)return;
+        const w=img.clientWidth,h=img.clientHeight;if(!w||!h)return;
+        if(entry.frame===entry.controller.frame&&entry.w===w&&entry.h===h){img.style.opacity='0';return;}
+        entry.w=w;entry.h=h;entry.frame=entry.controller.frame;
+        entry.overlay.width=w;entry.overlay.height=h;
+        const ctx=entry.overlay.getContext('2d');ctx.translate(w/2,h/2);
+        renderer.draw(ctx,entry.controller,Math.min(w,h)*CONFIG.animation.referenceHeight/160);
+        img.style.opacity='0';delete entry.wrapper.dataset.error;
+    }
     function updatePreviews(now){
         for(const img of document.querySelectorAll('img[data-skin-id="exalted"],.exalted-preview > img')){
             if(img.dataset.skinId!=='exalted'){
@@ -253,18 +265,17 @@
                 const wrapper=document.createElement('span');wrapper.className='exalted-preview';
                 const overlay=canvas(160,160);overlay.setAttribute('aria-hidden','true');
                 img.replaceWith(wrapper);wrapper.append(img,overlay);
-                entry={overlay,controller:new ExaltedAnimationController(),last:now,frame:-1};previews.set(img,entry);
-                preload().catch(()=>{wrapper.dataset.error='artwork unavailable';});
+                // The image reserves layout space; it is not Exalted artwork.
+                img.style.opacity='0';
+                entry={wrapper,overlay,controller:new ExaltedAnimationController(),last:now,frame:-1};previews.set(img,entry);
+                // Paint the first frame as soon as artwork is ready, even before the host loop starts.
+                // Subsequent animation still uses the existing game loop, with no extra timer or RAF.
+                preload().then(()=>drawPreview(img,entry)).catch(()=>{
+                    if(img.isConnected&&img.dataset.skinId==='exalted'&&img.parentElement===wrapper)wrapper.dataset.error='artwork unavailable';
+                });
             }
             const dt=Math.max(0,Math.min(100,now-entry.last));entry.last=now;entry.controller.update(dt);
-            if(!renderer.ready)continue;
-            const w=img.clientWidth,h=img.clientHeight;if(!w||!h)continue;
-            if(entry.frame===entry.controller.frame&&entry.w===w&&entry.h===h){img.style.opacity='0';continue;}
-            entry.w=w;entry.h=h;entry.frame=entry.controller.frame;
-            entry.overlay.width=w;entry.overlay.height=h;
-            const ctx=entry.overlay.getContext('2d');ctx.translate(w/2,h/2);
-            renderer.draw(ctx,entry.controller,Math.min(w,h)*CONFIG.animation.referenceHeight/160);
-            img.style.opacity='0';
+            drawPreview(img,entry);
         }
     }
     return {CONFIG,ExaltedAnimationController,ExaltedRenderer,playerInput,renderer,preload,updatePlayer,drawBody,drawTarget,onHit,updatePreviews,

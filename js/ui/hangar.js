@@ -29,6 +29,7 @@ function openHangarModal() {
     selectedHangarIndex = isAircraftUnlocked(currentIdx) ? currentIdx : 0;
     updateHangarModalUI();
     document.getElementById('inGameHangarModal')?.classList.remove('hidden');
+    SkyExalted.updatePreviews(performance.now());
     return true;
 }
 
