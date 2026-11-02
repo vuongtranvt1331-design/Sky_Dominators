@@ -62,7 +62,7 @@ bossEncounter = new SkyBosses.Director({
     playerHit:p=>{
         if (player.invulnerableTimer>0) return;
         player.takeDamage('BOSS_PROJECTILE',p.x,p.y);player.invulnerableTimer=1200;
-        if(player.hp<=0){triggerCinematicExplosion(player.x,player.y,true);endGame();}
+        if(player.hp<=0&&gameState!=='GAMEOVER'){triggerCinematicExplosion(player.x,player.y,true,['celestial','hazard'].includes(player.skinId)?player.skinId:null);endGame();}
     }
 });
 

@@ -16,7 +16,7 @@ function normalize(value){
  for(const field of ['revision','qualifyingFlights','coins','coinsEarned','coinsSpent','completedFlights'])integer(s[field],field);
  if(!Array.isArray(s.ownedAircraft)||!s.ownedAircraft.every(i=>Number.isInteger(i)&&i>=0&&i<AIRCRAFT_KEYS.length))throw Error('Invalid saved aircraft ownership');
  s.ownedAircraft=[...new Set([0,...s.ownedAircraft])];s.selectedAircraft=s.ownedAircraft.includes(s.selectedAircraft)?s.selectedAircraft:0;
- s.ownedSkins=normalizeSkinOwnership(s.ownedSkins);s.skinOwnershipVersion=2;
+ s.ownedSkins=normalizeSkinOwnership(s.ownedSkins);s.skinOwnershipVersion=2;grantRankSkins(s);
  s.selectedSkins=Object.fromEntries(Object.entries(s.selectedSkins||{}).filter(([key,id])=>ownsSkin(s,AIRCRAFT_KEYS.indexOf(key),id)));
  if(s.personalBest){integer(s.personalBest.score,'personal-best score',MIN_SCORE,MAX_SCORE);if(s.personalBest.aircraftIndex!==null)integer(s.personalBest.aircraftIndex,'personal-best aircraft',0,AIRCRAFT_KEYS.length-1);}
  if(!Array.isArray(s.pendingPromotions))throw Error('Invalid saved promotions');
@@ -36,10 +36,11 @@ function applyFlight(previous,input,at,{legacy=false,retroCoins=true}={}){
  s.completedFlights++;if(qualifies)s.qualifyingFlights++;
  s.coins+=coins;s.coinsEarned+=coins;integer(s.coins,'Coin balance');integer(s.coinsEarned,'earned Coins');
  s.personalBest=betterBest(s.personalBest,{score:flight.score,aircraftIndex:flight.aircraftIndex,flightId:flight.id,finishedAt:flight.finishedAt});
+ const skinsAwarded=grantRankSkins(s);
  const after=rank(s.qualifyingFlights),transition=!legacy&&after.index>before.index?{flightId:flight.id,from:before.index,to:after.index,acknowledgedAt:null}:null;
  if(transition)s.pendingPromotions=[...s.pendingPromotions,transition];
  s.updatedAt=at;s.revision++;
- return {state:s,result:{...flight,kind:'flight',qualifies,coinsAwarded:coins,rankBefore:before.index,rankAfter:after.index,transition,source:legacy?'verified-legacy':'new-flight',savedAt:at}};
+ return {state:s,result:{...flight,kind:'flight',qualifies,coinsAwarded:coins,skinsAwarded,rankBefore:before.index,rankAfter:after.index,transition,source:legacy?'verified-legacy':'new-flight',savedAt:at}};
 }
 function purchase(previous,index,at){
  integer(index,'aircraft',0,AIRCRAFT_KEYS.length-1);const s=normalize(previous);
@@ -63,10 +64,24 @@ function normalizeSkinOwnership(values){
  return [...owned];
 }
 function ownsSkin(state,index,id){return skinCompatible(index,id)&&(id==='factory_default'||state.ownedSkins?.includes(skinOwnershipId(index,id)));}
+// Rank gifts use the same aircraft-specific ownership keys as purchases, without currency writes.
+function grantRankSkins(state){
+ const added=[];
+ for(const line of S.lines){
+  if(line.unlock?.type!=='rank')continue;
+  const required=RANKS.find(r=>r.id===line.unlock.rankId);if(!required||rank(state.qualifyingFlights).index<required.index)continue;
+  for(let i=0;i<AIRCRAFT_KEYS.length;i++)if(skinCompatible(i,line.id)){
+   const key=skinOwnershipId(i,line.id);if(!state.ownedSkins.includes(key)){state.ownedSkins.push(key);added.push(key);}
+  }
+ }
+ return added;
+}
+function sortedSkins(index){return S.lines.filter(l=>skinCompatible(index,l.id)).sort((a,b)=>(b.hangarPriority||0)-(a.hangarPriority||0)||(b.price??-1)-(a.price??-1));}
 function purchaseSkin(previous,index,id,at){
  const key=skinOwnershipId(index,id),line=S.lines.find(l=>l.id===id),s=normalize(previous);
  if(!s.ownedAircraft.includes(index))throw Error('This aircraft is locked.');
  if(ownsSkin(s,index,id))return {state:s,duplicate:true,charged:0};
+ if(line.unlock?.type==='rank')throw Error('Reach '+(RANKS.find(r=>r.id===line.unlock.rankId)?.name||line.unlock.rankId)+' to receive this skin. It cannot be purchased.');
  if(!Number.isSafeInteger(line.price)||line.price<0)throw Error('This skin is not available to unlock yet.');
  if(s.coins<line.price)throw Error('Insufficient Coins: this skin costs '+line.price+' Coins.');
  s.coins-=line.price;s.coinsSpent+=line.price;s.ownedSkins.push(key);s.updatedAt=at;s.revision++;
@@ -110,5 +125,5 @@ function migrationBase(old,flights,selectedAircraft=0){
  state.migration={version:SCHEMA,retroCoins:oldBalance===0,verifiedFlights:flights.length,warnings};
  return normalize(state);
 }
-return {SCHEMA,PRICE,MIN_SCORE,MAX_SCORE,AIRCRAFT_KEYS,RANKS,norm,rank,reward,initial,normalize,validFlight,betterBest,applyFlight,purchase,purchaseSkin,equipSkin,skinCompatible,skinOwnershipId,normalizeSkinOwnership,ownsSkin,legacyFlight,mergeLegacy,migrationBase};
+return {SCHEMA,PRICE,MIN_SCORE,MAX_SCORE,AIRCRAFT_KEYS,RANKS,norm,rank,reward,initial,normalize,validFlight,betterBest,applyFlight,purchase,purchaseSkin,equipSkin,skinCompatible,skinOwnershipId,normalizeSkinOwnership,ownsSkin,legacyFlight,mergeLegacy,migrationBase,grantRankSkins,sortedSkins};
 });

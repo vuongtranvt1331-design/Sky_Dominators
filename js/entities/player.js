@@ -373,7 +373,7 @@ class Player {
         updateLeftHUD();
 
         if (this.hp <= 0) {
-            triggerCinematicExplosion(this.x, this.y, true);
+            triggerCinematicExplosion(this.x, this.y, true, ['celestial','hazard'].includes(this.skinId)?this.skinId:null);
             endGame();
             return { absorbedBy: 'NONE', hpLost: 1, fatal: true };
         }
@@ -569,6 +569,7 @@ class Player {
     }
 
     updateCosmeticSkin(dt) {
+        if(gameState==='PLAYING'&&!isPaused)SkyCelestial.updatePlayer(this,dt);
         if(this.skinId!=='ornithopter'||AIRCRAFT_CONFIGS[this.aircraftIndex].key!=='corsair'){this.ornithopter=null;return;}
         if(gameState!=='PLAYING'||isPaused)return;
         this.ornithopter ||= new SkyOrnithopter.WingDynamics();

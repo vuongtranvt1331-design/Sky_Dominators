@@ -134,7 +134,7 @@ function updateSkillButtonUI() {
         if (btnContainer) btnContainer.style.display = 'none';
         if (hudBadge) {
             if (player.aircraftIndex === 1) {
-                hudBadge.textContent = 'TITAN: 2 ARMOR + 3-SHOT CANNON';
+                hudBadge.textContent = 'TITAN: 2 ARMOR + 2-SHOT CANNON';
                 hudBadge.style.color = '#d97706';
             } else if (player.aircraftIndex === 3) {
                 hudBadge.textContent = 'CROSSHAIR: 1-SHOT DESTRUCTION';

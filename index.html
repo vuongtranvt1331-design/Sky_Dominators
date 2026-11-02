@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="sky-dominators-release" content="2026-11-01-exalted-animation-8">
+    <meta name="sky-dominators-release" content="2026-11-01-celestial-1">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sky Dominators — Arcade Flight</title>
+    <link rel="icon" type="image/png" href="./assets/logo/sky_dominators_logo.png">
     <!-- Tailwind CSS CDN (with complete offline fallback styles) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDK v10 Compat for Sky Dominators Cloud Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <link rel="stylesheet" href="css/game.css?v=2026-11-01-exalted-assets-7">
+    <link rel="stylesheet" href="css/game.css?v=2026-11-01-celestial-1">
     <link rel="stylesheet" href="css/progress.css?v=2026-11-01-modular-1">
     <script defer src="js/config/skins/red-wraith-config.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/config/skins/elder-wood-config.js?v=2026-11-01-modular-1"></script>
@@ -18,17 +19,20 @@
     <script defer src="js/entities/skins/ornithopter.js?v=2026-11-01-ornithopter-tip-jitter-1"></script>
     <script defer src="js/config/skins/exalted-config.js?v=2026-11-01-exalted-animation-8"></script>
     <script defer src="js/entities/skins/exalted.js?v=2026-11-01-exalted-animation-8"></script>
-    <script defer src="js/config/skins/catalog.js?v=2026-11-01-exalted-animation-8"></script>
-    <script defer src="js/rendering/skins.js?v=2026-11-01-exalted-animation-8"></script>
+    <script defer src="js/config/skins/celestial-config.js?v=2026-11-01-celestial-1"></script>
+    <script defer src="js/entities/skins/celestial.js?v=2026-11-01-celestial-1"></script>
+    <script defer src="js/config/skins/catalog.js?v=2026-11-01-hazard-rotor-5x"></script>
+    <script defer src="js/entities/skins/hazard.js?v=2026-11-01-titan-buff-1"></script>
+    <script defer src="js/rendering/skins.js?v=2026-11-01-titan-buff-1"></script>
     <script defer src="js/entities/bosses/drone-swarm.js?v=2026-11-01-boss5-phases-1"></script>
     <script defer src="js/entities/bosses/sky-fortress.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/entities/bosses/continental-bomber.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/boss-director.js?v=2026-11-01-boss5-phases-1"></script>
-    <script defer src="js/systems/progress/core.js?v=2026-11-01-modular-1"></script>
+    <script defer src="js/systems/progress/core.js?v=2026-11-01-celestial-1"></script>
     <script defer src="js/systems/progress/firestore.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/progress/client.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/config/gameplay.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/config/aircraft.js?v=2026-11-01-modular-1"></script>
+    <script defer src="js/config/aircraft.js?v=2026-11-01-titan-buff-1"></script>
     <script defer src="js/config/audio.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/config/vocabulary.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/config/firebase.js?v=2026-11-01-modular-1"></script>
@@ -39,32 +43,32 @@
     <script defer src="js/ui/danger-hud.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/missions.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/formations.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/entities/enemy-helicopter.js?v=2026-11-01-modular-1"></script>
+    <script defer src="js/entities/enemy-helicopter.js?v=2026-11-01-titan-buff-1"></script>
     <script defer src="js/entities/enemy-formation.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/rendering/terrain.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/entities/projectiles.js?v=2026-11-01-boss5-phases-1"></script>
     <script defer src="js/systems/ownership.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/rendering/player-effects.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/entities/player.js?v=2026-11-01-exalted-animation-8"></script>
-    <script defer src="js/ui/aircraft-previews.js?v=2026-11-01-exalted-animation-8"></script>
+    <script defer src="js/entities/player.js?v=2026-11-01-hazard-1"></script>
+    <script defer src="js/ui/aircraft-previews.js?v=2026-11-01-celestial-1"></script>
     <script defer src="js/entities/effects.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/rendering/effects.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/state.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/spawn.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/ui/hud.js?v=2026-11-01-modular-1"></script>
+    <script defer src="js/ui/hud.js?v=2026-11-01-titan-buff-1"></script>
     <script defer src="js/core/world.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/input.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/systems/lifecycle.js?v=2026-11-01-exalted-animation-8"></script>
-    <script defer src="js/systems/boss-integration.js?v=2026-11-01-boss5-phases-1"></script>
+    <script defer src="js/systems/boss-integration.js?v=2026-11-01-hazard-1"></script>
     <script defer src="js/entities/bomber-missile.js?v=2026-11-01-boss5-phases-1"></script>
-    <script defer src="js/systems/collisions.js?v=2026-11-01-exalted-1"></script>
-    <script defer src="js/core/game-loop.js?v=2026-11-01-exalted-animation-8"></script>
+    <script defer src="js/systems/collisions.js?v=2026-11-01-titan-buff-1"></script>
+    <script defer src="js/core/game-loop.js?v=2026-11-01-hazard-1"></script>
     <script defer src="js/ui/leaderboards.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/ui/hangar.js?v=2026-11-01-exalted-animation-8"></script>
+    <script defer src="js/ui/hangar.js?v=2026-11-01-celestial-1"></script>
     <script defer src="js/ui/navigation.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/ui/events.js?v=2026-11-01-modular-1"></script>
     <script defer src="js/app.js?v=2026-11-01-modular-1"></script>
-    <script defer src="js/ui/progress.js?v=2026-11-01-exalted-animation-8"></script>
+    <script defer src="js/ui/progress.js?v=2026-11-01-celestial-1"></script>
 </head>
 <body>
 

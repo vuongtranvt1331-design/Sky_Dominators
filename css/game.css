@@ -1462,3 +1462,10 @@ body {
 .exalted-preview { position:relative; display:inline-grid; place-items:center; min-width:0; max-width:100%; vertical-align:middle; }
 .exalted-preview > canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; image-rendering:pixelated; }
 #inGameHangarModal .hangar-selected-info > .exalted-preview, #inGameHangarModal .skin-card > .exalted-preview { width:100%; }
+
+/* Celestial uses a separate cosmetic canvas, with the normal image retained while loading. */
+.celestial-preview {position:relative;display:inline-grid;place-items:center;min-width:0;max-width:100%;vertical-align:middle;}
+.celestial-preview > canvas {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;image-rendering:pixelated;}
+#inGameHangarModal .hangar-selected-info > .celestial-preview,#inGameHangarModal .skin-card > .celestial-preview {width:100%;}
+.skin-card[data-skin="celestial"] {border-color:#76e7ff;}
+.skin-card[data-skin="celestial"] .skin-rarity {color:#a9f5ff;}

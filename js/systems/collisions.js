@@ -15,7 +15,7 @@ function handleHelicopterHit(enemy, row, isFrontRow, attackerClass, skillGenerat
         player.squadronTimer > 0 && skillGeneration === player.squadronGeneration;
     if (skillGeneration !== null && !isPhantomSkillAttack) return;
 
-    // Apply Class-Specific Damage System (Corsair 1-shot, Titan 3-shots, Standard 2-shots):
+    // Apply Class-Specific Damage System (Corsair 1-shot, Titan 2-shots, Standard 2-shots):
     const hitResult = enemy.takeHit(attackerClass);
     // Visual mark only, after the existing validated hit; never changes damage.
     SkyExalted.onHit(player, enemy, projectile);
@@ -107,7 +107,7 @@ function handleHelicopterHit(enemy, row, isFrontRow, attackerClass, skillGenerat
         onHelicopterRowDestroyed(row);
 
         if (typeof player !== 'undefined' && player.hp <= 0) {
-            triggerCinematicExplosion(player.x, player.y, true);
+            triggerCinematicExplosion(player.x, player.y, true, ['celestial','hazard'].includes(player.skinId)?player.skinId:null);
             endGame();
             return deathImpact;
         }
@@ -277,7 +277,7 @@ function checkCollisions() {
                 targetsCleared++;
 
                 if (player.hp <= 0) {
-                    triggerCinematicExplosion(player.x, player.y, true);
+                    triggerCinematicExplosion(player.x, player.y, true, ['celestial','hazard'].includes(player.skinId)?player.skinId:null);
                     endGame();
                     return;
                 }

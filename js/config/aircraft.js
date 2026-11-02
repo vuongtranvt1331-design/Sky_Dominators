@@ -47,11 +47,11 @@ const AIRCRAFT_CONFIGS = [
         maxArmor: 2, // Starts with 2x standard starting armor (2 units)
         armorRecoveryInterval: STANDARD_DEFENSE_RECOVERY_MS * TITAN_ARMOR_RECOVERY_MULTIPLIER,
         damagePerShot: 1,
-        shotsToDestroy: 3, // Requires 3 shots to destroy enemy
+        shotsToDestroy: 2, // Requires 2 shots to destroy a full-health regular enemy
         descriptions: [
             "3 HP hull with 2 independent armor units",
             "Independent armor recovery (28s per depleted unit)",
-            "Heavy cannon requires 3 shots per enemy"
+            "Heavy cannon requires 2 shots per enemy"
         ],
         skillName: "Heavy Armor Advantage",
         skillIcon: "🛡️",

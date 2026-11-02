@@ -12,7 +12,7 @@ function render(){
  // A saved Exalted selection can arrive after Player was constructed. Refresh only its menu appearance.
  if(gameState==='START'&&P.confirmed&&typeof player!=='undefined'&&player.aircraftIndex===P.selected){
   const savedSkin=P.skin(player.aircraftIndex);
-  if(player.skinId!==savedSkin&&(savedSkin==='exalted'||player.skinId==='exalted'))player.applyAircraftImage();
+  if(player.skinId!==savedSkin&&(['exalted','celestial'].includes(savedSkin)||['exalted','celestial'].includes(player.skinId)))player.applyAircraftImage();
  }
  if($('pilotRank'))rankInfo($('pilotRank'),r);
  text('pilotCoins',state.coins.toLocaleString()+' Coins');text('pilotProgress',state.qualifyingFlights+' qualifying flights · '+(r.index===15?'Final rank':(r.index+1)+' needed for '+C.RANKS[r.index+1].name));
@@ -64,21 +64,21 @@ function renderHangar(){
  for(const index of getHangarAircraftOrder()){
   const c=AIRCRAFT_CONFIGS[index],ready=P.owns(index),item=el('button','hangar-thumb-item'+(index===selectedHangarIndex?' is-selected':'')+(!ready?' is-locked':''));item.type='button';item.dataset.index=index;item.dataset.locked=String(!ready);item.setAttribute('aria-pressed',String(index===selectedHangarIndex));
   const image=el('img','hangar-thumb-img');image.src=c.file;image.alt='';const copy=el('span');copy.append(el('span','hangar-card-name',c.name),el('span','hangar-card-status',ready?'OWNED':'LOCKED · 500 COINS'));item.append(image,copy);item.addEventListener('click',()=>selectHangarAircraft(index));list.append(item);
- }list.scrollTop=scroll;renderSkins();SkyExalted.updatePreviews(performance.now());
+ }list.scrollTop=scroll;renderSkins();SkyExalted.updatePreviews(performance.now());SkyCelestial.updatePreviews(performance.now());
 }
 function renderSkins(){
  const index=selectedHangarIndex,cfg=AIRCRAFT_CONFIGS[index],current=P.skin(index);inspectedSkin=inspectedSkin&&C.skinCompatible(index,inspectedSkin)?inspectedSkin:current;
  const host=$('skinCards'),scroll=host.scrollTop;host.replaceChildren();
- for(const skin of SkySkinCatalog.lines.filter(l=>C.skinCompatible(index,l.id))){
+ for(const skin of C.sortedSkins(index)){
   const owned=P.ownsSkin(index,skin.id),card=el('button','skin-card'+(skin.id===inspectedSkin?' is-inspected':'')+(owned?'':' is-locked')+(skin.rarity==='LEGEND'?' is-legend':''));
   card.type='button';card.dataset.skin=skin.id;card.dataset.ownershipId=C.skinOwnershipId(index,skin.id);card.setAttribute('aria-pressed',String(skin.id===inspectedSkin));
   const img=el('img');img.src=SkySkins.path(index,skin.id);img.alt='';img.dataset.aircraftKey=cfg.key;img.dataset.skinId=skin.id;img.width=96;img.height=72;
-  card.append(img,el('strong','',skin.name),el('span','skin-rarity',skin.rarity||''),el('span','',skin.id===current?'EQUIPPED':owned?'OWNED':skin.price===null?'COMING SOON':'LOCKED · '+skin.price+' Coins'));
+  card.append(img,el('strong','',skin.name),el('span','skin-rarity',skin.rarity||''),el('span','',skin.id===current?'EQUIPPED':owned?'OWNED':skin.unlock?.type==='rank'?'0 COINS · CELESTIAL I GIFT':skin.price===null?'COMING SOON':'LOCKED · '+skin.price+' Coins'));
   card.addEventListener('click',()=>{if(purchasing)return;inspectedSkin=skin.id;renderHangar();});host.append(card);
  }
  host.scrollTop=scroll;const skin=SkySkinCatalog.lines.find(l=>l.id===inspectedSkin),owned=P.ownsSkin(index,skin.id),button=$('skinAction');
- button.disabled=purchasing||!P.owns(index)||skin.id===current||(!owned&&!Number.isSafeInteger(skin.price));
- button.textContent=purchasing?'SAVING…':!P.owns(index)?'UNLOCK AIRCRAFT FIRST':skin.id===current?'EQUIPPED':owned?'EQUIP SKIN':skin.price===null?'COMING SOON':'UNLOCK · '+skin.price+' COINS';
+ button.disabled=purchasing||!P.owns(index)||skin.id===current||(!owned&&(skin.unlock?.type==='rank'||!Number.isSafeInteger(skin.price)));
+ button.textContent=purchasing?'SAVING…':!P.owns(index)?'UNLOCK AIRCRAFT FIRST':skin.id===current?'EQUIPPED':owned?'EQUIP SKIN':skin.unlock?.type==='rank'?'REACH CELESTIAL I':skin.price===null?'COMING SOON':'UNLOCK · '+skin.price+' COINS';
 }
 function skinFeedback(message,error=false){
  const status=$('skinStatus');status.textContent=message;status.dataset.error=String(error);
@@ -88,6 +88,7 @@ function skinFeedback(message,error=false){
 async function skinAction(){
  if(purchasing)return;const index=selectedHangarIndex,id=inspectedSkin;if(!P.owns(index)||!id||id===P.skin(index))return;
  const skin=SkySkinCatalog.lines.find(s=>s.id===id);
+ if(skin.unlock?.type==='rank'&&!P.ownsSkin(index,id)){skinFeedback('Gifted automatically at Celestial I. No Coins required.');return;}
  if(!P.ownsSkin(index,id)&&P.state.coins<skin.price){skinFeedback('Not enough Coins. '+skin.name+' costs '+skin.price.toLocaleString()+' Coins. Balance: '+P.state.coins.toLocaleString()+'. Need '+(skin.price-P.state.coins).toLocaleString()+' more.',true);return;}
  purchasing=true;skinFeedback('Checking artwork and saving your skin purchase…');renderHangar();
  try{
@@ -122,7 +123,7 @@ function showResult(flight){
  shownFlight=flight;
  text('finalScoreText',String(flight.score).padStart(6,'0'));text('finalTargetsText',flight.targetsCleared);text('finalIntervalText',(spawnInterval/1000).toFixed(2)+'s');
  const cfg=AIRCRAFT_CONFIGS[flight.aircraftIndex],skinId=player.skinId||'factory_default',image=$('gameOverAircraftImg');image.src=SkySkins.path(flight.aircraftIndex,skinId);image.dataset.skinId=skinId;image.dataset.aircraftKey=cfg.key;text('gameOverAircraftName',cfg.name.toUpperCase());
- $('detailedRecordsOverlay').classList.add('hidden');$('gameOverOverlay').classList.remove('hidden');renderResult();SkyExalted.updatePreviews(performance.now());
+ $('detailedRecordsOverlay').classList.add('hidden');$('gameOverOverlay').classList.remove('hidden');renderResult();SkyExalted.updatePreviews(performance.now());SkyCelestial.updatePreviews(performance.now());
 }
 function renderResult(){
  text('finalSortiesCountText',P.state.qualifyingFlights);
@@ -130,7 +131,7 @@ function renderResult(){
  const saved=P.result(shownFlight.id),rank=saved?C.RANKS[saved.rankAfter]:P.rank();
  rankInfo($('flightRank'),rank);
  text('flightCoins',saved?'+'+saved.coinsAwarded+' Coins':'+'+C.reward(shownFlight.score)+' Coins pending');
- text('flightSaveStatus',saved?'Flight saved · '+P.state.coins+' Coins balance':P.status);
+ text('flightSaveStatus',saved?'Flight saved · '+P.state.coins+' Coins balance'+(saved.skinsAwarded?.includes('fighter_1__celestial')?' · Celestial skin gifted to Player 1':''):P.status);
  if(saved)resumePromotion();
 }
 function resumePromotion(){

@@ -20,7 +20,7 @@ function drawCrossHairRotor(ctx, width, height, angle,skinId='factory_default') 
 function updateCrossHairPreviews(now) {
     // Reuse the game's animation loop for all DOM previews, including Records.
     for (const img of document.querySelectorAll('img')) {
-        if(img.dataset.skinId==='exalted'||img.parentElement?.classList.contains('exalted-preview'))continue;
+        if(['exalted','celestial'].includes(img.dataset.skinId)||img.parentElement?.matches('.exalted-preview,.celestial-preview'))continue;
         const eligible = img.dataset.aircraftKey === 'corsair' || /(?:skin_4\.png|aircraft_4\.png)/.test(img.getAttribute('src') || '');
         let wrap = img.parentElement;
         if (!eligible) {

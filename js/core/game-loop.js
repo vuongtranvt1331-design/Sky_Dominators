@@ -94,6 +94,9 @@ function gameLoop(now) {
         combatTexts = combatTexts.filter(ct => ct.life > 0);
     }
 
+    // Finish only Celestial's death burst after the run ends, without advancing combat.
+    if(gameState==='GAMEOVER'){SkyCelestial.updateEffects(dt);SkySkins.updateHazardAfterGameOver(dt);}
+
     // 1. Draw Supplied Tiled Background
     terrain.drawGround(ctx);
 

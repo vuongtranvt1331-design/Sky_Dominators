@@ -44,6 +44,11 @@ function drawSkyborneFX(ctx,f){
 }
 
 function drawProjectile(ctx,shot){
+ if(shot.skinId==='hazard'&&shot.attackerKey==='titan'&&!shot.isSpecial){
+  const img=frame('hazard','projectile',shot.visualAge);if(!ready(img))return false;
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.translate(shot.x,shot.y);ctx.rotate(Math.atan2(shot.vy,shot.vx)+Math.PI/2);ctx.drawImage(img,-16,-16,32,32);ctx.restore();return true;
+ }
+ if(shot.skinId==='celestial')return SkyCelestial.drawProjectile(ctx,shot);
  if(shot.skinId==='exalted')return SkyExalted.renderer.drawProjectile(ctx,shot);
  if(isSkyborne(shot)){
   const img=image(skyborneRoot+catalog.skyborne.beam.file);if(!ready(img))return false;
@@ -65,7 +70,7 @@ function drawProjectile(ctx,shot){
  const scale=projectileScale(shot.skinId),img=frame(shot.skinId,'projectile',scale===1?clock:shot.visualAge);
  ctx.save();ctx.imageSmoothingEnabled=false;const drawn=fit(ctx,img,shot.x,shot.y,18*scale,23*scale);ctx.restore();return drawn;
 }
-function eliminationSkin(shot){return shot?.skinId==='money_printer'?'money_printer':isWraithAttack(shot)?'red_wraith':null;}
+function eliminationSkin(shot){if(shot?.skinId==='celestial'&&shot.attackerKey==='fighter_1')return 'celestial';return shot?.skinId==='money_printer'?'money_printer':isWraithAttack(shot)?'red_wraith':null;}
 
 function fit(ctx,img,x,y,w,h){if(!ready(img))return false;const s=Math.min(w/img.naturalWidth,h/img.naturalHeight);ctx.drawImage(img,x-img.naturalWidth*s/2,y-img.naturalHeight*s/2,img.naturalWidth*s,img.naturalHeight*s);return true;}
 // Inspect alpha once per loaded image; source artwork is never rewritten.
@@ -88,10 +93,10 @@ function targetVisualBox(target,boss){
  const sx=contained?Math.min(w/img.naturalWidth,h/img.naturalHeight):w/img.naturalWidth,sy=contained?sx:h/img.naturalHeight;
  return {x:target.x+((b[0]+b[2]-img.naturalWidth)/2)*sx,y:target.y+((b[1]+b[3]-img.naturalHeight)/2)*sy,w:(b[2]-b[0])*sx,h:(b[3]-b[1])*sy};
 }
-async function ensure(index,id){if(id==='exalted')await SkyExalted.preload();if(id==='ornithopter')await Promise.all([SkyOrnithopter.CONFIG.body.file,SkyOrnithopter.CONFIG.wing.file,SkyOrnithopter.CONFIG.blurWing.file].map(url=>new Promise((resolve,reject)=>{const img=image(url);if(ready(img))return resolve(img);img.addEventListener('load',()=>resolve(img),{once:true});img.addEventListener('error',()=>reject(Error('Skin artwork could not load. No Coins were spent.')),{once:true});if(img.complete&&!img.naturalWidth)reject(Error('Skin artwork unavailable.'));})));const img=image(path(index,id));if(ready(img))return img;await new Promise((ok,no)=>{img.addEventListener('load',ok,{once:true});img.addEventListener('error',()=>no(Error('Skin artwork could not load. No Coins were spent.')),{once:true});if(img.complete&&!img.naturalWidth)no(Error('Skin artwork unavailable.'));});return img;}
-function preload(id){if(id==='exalted')SkyExalted.preload().catch(error=>console.warn(error.message));if(id==='ornithopter'){image(SkyOrnithopter.CONFIG.body.file);image(SkyOrnithopter.CONFIG.wing.file);image(SkyOrnithopter.CONFIG.blurWing.file);}if(id==='skyborne')for(const spec of ['flight','beam','impact','flash'])image(skyborneRoot+catalog.skyborne[spec].file);if(id==='elder_wood')image(catalog.elderWoodRotor);for(const a of catalog.animations.filter(a=>a.skin_line===id))for(const p of a.frames)image(p);}
-function emit(id,category,x,y,size=40,{once=false}={}){if(id==='phoenix_fire'&&['muzzle_flash','impact'].includes(category))once=true;const a=sequence(id,category);if(id==='factory_default'||!a)return false;if(fx.length>=72)fx.shift();fx.push({id,category,x,y,size:size*(id==='red_wraith'&&['muzzle_flash','impact','electrical_impact','elimination'].includes(category)?WRAITH_EFFECT_SCALE:1),age:0,once,life:once?a.frame_ms.reduce((n,v)=>n+v,0):480});return true;}
-function eliminate(id,x,y,isBig){return (id==='red_wraith'||id==='money_printer')&&emit(id,'elimination',x,y,isBig?104:76,{once:true});}
+async function ensure(index,id){if(id==='hazard')await SkyHazard.ensure(image,ready);if(id==='celestial')await SkyCelestial.preload();if(id==='exalted')await SkyExalted.preload();if(id==='ornithopter')await Promise.all([SkyOrnithopter.CONFIG.body.file,SkyOrnithopter.CONFIG.wing.file,SkyOrnithopter.CONFIG.blurWing.file].map(url=>new Promise((resolve,reject)=>{const img=image(url);if(ready(img))return resolve(img);img.addEventListener('load',()=>resolve(img),{once:true});img.addEventListener('error',()=>reject(Error('Skin artwork could not load. No Coins were spent.')),{once:true});if(img.complete&&!img.naturalWidth)reject(Error('Skin artwork unavailable.'));})));const img=image(path(index,id));if(ready(img))return img;await new Promise((ok,no)=>{img.addEventListener('load',ok,{once:true});img.addEventListener('error',()=>no(Error('Skin artwork could not load. No Coins were spent.')),{once:true});if(img.complete&&!img.naturalWidth)no(Error('Skin artwork unavailable.'));});return img;}
+function preload(id){if(id==='hazard'){image(catalog.hazard.body);image(catalog.hazard.rotorFile);}if(id==='celestial')SkyCelestial.preload().catch(error=>console.warn(error.message));if(id==='exalted')SkyExalted.preload().catch(error=>console.warn(error.message));if(id==='ornithopter'){image(SkyOrnithopter.CONFIG.body.file);image(SkyOrnithopter.CONFIG.wing.file);image(SkyOrnithopter.CONFIG.blurWing.file);}if(id==='skyborne')for(const spec of ['flight','beam','impact','flash'])image(skyborneRoot+catalog.skyborne[spec].file);if(id==='elder_wood')image(catalog.elderWoodRotor);for(const a of catalog.animations.filter(a=>a.skin_line===id))for(const p of a.frames)image(p);}
+function emit(id,category,x,y,size=40,{once=false}={}){if(['phoenix_fire','hazard'].includes(id)&&['muzzle_flash','impact'].includes(category))once=true;const a=sequence(id,category);if(id==='factory_default'||!a)return false;if(fx.length>=72)fx.shift();fx.push({id,category,x,y,size:size*(id==='red_wraith'&&['muzzle_flash','impact','electrical_impact','elimination'].includes(category)?WRAITH_EFFECT_SCALE:1),age:0,once,life:once?a.frame_ms.reduce((n,v)=>n+v,0):480});return true;}
+function eliminate(id,x,y,isBig){if(id==='celestial')return SkyCelestial.emit(x,y,isBig?SkyCelestial.CONFIG.explosion.bigSize:SkyCelestial.CONFIG.explosion.deathSize);return (id==='red_wraith'||id==='money_printer'||id==='hazard')&&emit(id,'elimination',x,y,isBig?104:76,{once:true});}
 function enemyDestructionSequence(id){
  const effectId=catalog.lines.find(line=>line.id===id)?.enemyDestructionImpact;
  const a=effectId&&catalog.animations.find(animation=>animation.id===effectId&&animation.skin_line===id);
@@ -99,6 +104,7 @@ function enemyDestructionSequence(id){
  if(!a||a.loop||!a.frames?.length||a.frames.length!==a.frame_ms?.length||!a.frame_ms.every(ms=>Number.isFinite(ms)&&ms>0)||!a.frames.every(p=>ready(image(p))))return null; return a;
 }
 function enemyDestruction(id,x,y,isBig){
+ if(id==='celestial')return eliminate(id,x,y,isBig);
  if(id==='exalted'){
   if(!SkyExalted.renderer.ready||!SkyExalted.renderer.eliminationFrames.length)return false;
   const spec=SkyExalted.CONFIG.elimination;if(fx.length>=72)fx.shift();
@@ -110,11 +116,15 @@ function enemyDestruction(id,x,y,isBig){
  fx.push({id,category:'enemy_destruction_impact',animation:a,x,y,angle:0,scale:Math.min(size/img.naturalWidth,size/img.naturalHeight),age:0,once:true,life:a.frame_ms.reduce((n,v)=>n+v,0)});
  return true;
 }
-function impact(id,x,y){if(id==='skyborne'){if(fx.length>=72)fx.shift();fx.push({id,category:'skyborne_impact',x,y,age:0,life:240});return;}if(id==='king_ghidorah'){if(fx.length>=72)fx.shift();fx.push({id,category:'ghidorah_impact',x,y,age:0,life:260});return;}emit(id,'impact',x,y);if(id==='red_wraith')emit(id,'electrical_impact',x,y,36);if(id==='money_printer'){emit(id,'money_word_impact',x,y-12,52);emit(id,'coin_particle',x+10,y,22);}if(id==='minecraft')emit(id,'block_particle',x,y,26);if(id==='glacier')emit(id,'ice_shards',x,y,35);}
-function update(dt){clock+=dt;for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.age+=dt;if(f.age>=f.life)fx.splice(i,1);}}
-function draw(ctx){for(const f of fx){if(f.category==='exalted_elimination'){SkyExalted.renderer.drawElimination(ctx,f);continue;}if(f.id==='skyborne'){drawSkyborneFX(ctx,f);continue;}if(f.category==='ghidorah_convergence'||f.category==='ghidorah_impact'){drawGhidorahSkillFX(ctx,f);continue;}ctx.save();if(f.category==='enemy_destruction_impact')ctx.imageSmoothingEnabled=false;ctx.globalAlpha=f.once?1:Math.min(1,(f.life-f.age)/160);if(f.animation){ctx.translate(f.x,f.y);ctx.rotate(f.angle);drawAnchored(ctx,f.animation,f.age,0,0,f.scale);}else if(f.id==='phoenix_fire')drawAnchored(ctx,sequence(f.id,f.category),f.age,f.x,f.y,f.size/48);else fit(ctx,frame(f.id,f.category,f.age),f.x,f.y,f.size,f.size);ctx.restore();}}
-function exhaust(ctx,id,cfg){if(id==='skyborne'&&cfg.key==='viper')return true;if(id==='factory_default')return false;const img=frame(id,'engine');if(!ready(img))return false;const slots=cfg.exhausts.length?cfg.exhausts:[{xRatio:0,yRatio:.37}];for(const s of slots)fit(ctx,img,s.xRatio*cfg.width,s.yRatio*cfg.height+8,26,32);return true;}
+function impact(id,x,y){if(id==='celestial'){SkyCelestial.emit(x,y,SkyCelestial.CONFIG.explosion.impactSize);return;}if(id==='skyborne'){if(fx.length>=72)fx.shift();fx.push({id,category:'skyborne_impact',x,y,age:0,life:240});return;}if(id==='king_ghidorah'){if(fx.length>=72)fx.shift();fx.push({id,category:'ghidorah_impact',x,y,age:0,life:260});return;}emit(id,'impact',x,y);if(id==='red_wraith')emit(id,'electrical_impact',x,y,36);if(id==='money_printer'){emit(id,'money_word_impact',x,y-12,52);emit(id,'coin_particle',x+10,y,22);}if(id==='minecraft')emit(id,'block_particle',x,y,26);if(id==='glacier')emit(id,'ice_shards',x,y,35);}
+// Only Hazard death effects continue after game over; combat and all other FX retain their clocks.
+function updateHazardAfterGameOver(dt){for(let i=fx.length-1;i>=0;i--)if(fx[i].id==='hazard'){fx[i].age+=dt;if(fx[i].age>=fx[i].life)fx.splice(i,1);}}
+function update(dt){SkyCelestial.updateEffects(dt);clock+=dt;for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.age+=dt;if(f.age>=f.life)fx.splice(i,1);}}
+function draw(ctx){SkyCelestial.drawEffects(ctx);for(const f of fx){if(f.category==='exalted_elimination'){SkyExalted.renderer.drawElimination(ctx,f);continue;}if(f.id==='skyborne'){drawSkyborneFX(ctx,f);continue;}if(f.category==='ghidorah_convergence'||f.category==='ghidorah_impact'){drawGhidorahSkillFX(ctx,f);continue;}ctx.save();if(f.category==='enemy_destruction_impact')ctx.imageSmoothingEnabled=false;ctx.globalAlpha=f.once?1:Math.min(1,(f.life-f.age)/160);if(f.animation){ctx.translate(f.x,f.y);ctx.rotate(f.angle);drawAnchored(ctx,f.animation,f.age,0,0,f.scale);}else if(f.id==='phoenix_fire')drawAnchored(ctx,sequence(f.id,f.category),f.age,f.x,f.y,f.size/48);else fit(ctx,frame(f.id,f.category,f.age),f.x,f.y,f.size,f.size);ctx.restore();}}
+function exhaust(ctx,id,cfg){if(id==='celestial')return true;if(id==='skyborne'&&cfg.key==='viper')return true;if(id==='factory_default')return false;const img=frame(id,'engine');if(!ready(img))return false;const slots=cfg.exhausts.length?cfg.exhausts:[{xRatio:0,yRatio:.37}];for(const s of slots)fit(ctx,img,s.xRatio*cfg.width,s.yRatio*cfg.height+8,26,32);return true;}
 function drawBody(ctx,player,cfg){
+ if(player.skinId==='hazard')return SkyHazard.draw(ctx,player,cfg,image,ready,clock);
+ if(player.skinId==='celestial')return SkyCelestial.drawBody(ctx,player,cfg);
  if(player.skinId==='exalted')return SkyExalted.drawBody(ctx,player,cfg);
  if(cfg.key==='corsair'&&player.skinId==='ornithopter')return SkyOrnithopter.draw(ctx,player.ornithopter,cfg,image,ready);
  if(cfg.key==='viper'&&player.skinId==='skyborne'){
@@ -166,6 +176,10 @@ function drawTarget(ctx,player,boss){
  fitVisible(ctx,frame('red_wraith',category,t),box.x,box.y,box.w*scale,box.h*scale);ctx.restore();
 }
 function updatePreviews(now){
+ for(const el of document.querySelectorAll('img[data-hazard-drift]'))if(el.dataset.skinId!=='hazard'){el.style.translate='';delete el.dataset.hazardDrift;}
+ const hazardElements=document.querySelectorAll('img[data-skin-id="hazard"]');
+ if(hazardElements.length){preload('hazard');const img=frame('hazard','flight',now);if(ready(img))for(const el of hazardElements){if(el.src!==img.src)el.src=img.src;el.style.translate=SkyHazard.visualOffset(now)+'px 0px';el.dataset.hazardDrift='true';}}
+ SkyCelestial.updatePreviews(now);
  SkyExalted.updatePreviews(now);
  const skyElements=document.querySelectorAll('img[data-skin-id="skyborne"]');
  if(skyElements.length){preload('skyborne');const img=frame('skyborne','flight',now);if(ready(img))for(const el of skyElements)if(el.src!==img.src)el.src=img.src;}
@@ -241,5 +255,5 @@ function emitBomberLaunch(shot,owner){
  const a=bomberSequence(shot.skinId,'missile_launch');if(!a)return false;if(fx.length>=72)fx.shift();
  fx.push({id:shot.skinId,category:'missile_launch',animation:a,x:shot.x,y:shot.y,angle:Math.atan2(shot.vy,shot.vx)+Math.PI/2,scale:.32,age:0,once:true,life:a.frame_ms.reduce((n,v)=>n+v,0)});return true;
 }
-window.SkySkins={catalog,emitSkyborneShot,projectileScale,drawProjectile,eliminationSkin,bomberSequence,bomberExhaust,drawBomberMissile,emitBomberLaunch,visibleBounds,targetVisualBox,isWraithAttack,nextWraithProjectile,drawWraithProjectile,eliminate,enemyDestruction,enemyDestructionSequence,bomberFrame,drawBody,drawTarget,updatePreviews,path,image,ready,fit,ensure,preload,frame,emit,impact,update,draw,exhaust,bodyEffects,clear(){fx.length=0;SkyExalted.clear();},get count(){return fx.length;},apply(player){const id=SkyProfile.skin(player.aircraftIndex);if(player.skinId&&player.skinId!==id)fx.length=0;if(player.skinId!==id)SkyExalted.resetPlayer(player);player.skinId=id;if(id==='ornithopter'){player.ornithopter ||= new SkyOrnithopter.WingDynamics();}else player.ornithopter=null;preload(id);const img=image(path(player.aircraftIndex,id));player.aircraftImage=img;}};
+window.SkySkins={catalog,updateHazardAfterGameOver,emitSkyborneShot,projectileScale,drawProjectile,eliminationSkin,bomberSequence,bomberExhaust,drawBomberMissile,emitBomberLaunch,visibleBounds,targetVisualBox,isWraithAttack,nextWraithProjectile,drawWraithProjectile,eliminate,enemyDestruction,enemyDestructionSequence,bomberFrame,drawBody,drawTarget,updatePreviews,path,image,ready,fit,ensure,preload,frame,emit,impact,update,draw,exhaust,bodyEffects,clear(){fx.length=0;SkyExalted.clear();SkyCelestial.clear();},get count(){return fx.length;},apply(player){const id=SkyProfile.skin(player.aircraftIndex);if(player.skinId&&player.skinId!==id)fx.length=0;if(player.skinId!==id){SkyExalted.resetPlayer(player);SkyCelestial.resetPlayer(player);}player.skinId=id;if(id==='ornithopter'){player.ornithopter ||= new SkyOrnithopter.WingDynamics();}else player.ornithopter=null;preload(id);const img=image(path(player.aircraftIndex,id));player.aircraftImage=img;}};
 })();

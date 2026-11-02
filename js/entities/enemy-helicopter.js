@@ -56,21 +56,7 @@ class EnemyAircraft {
             return { destroyed: true, hp: 0 };
         }
 
-        // 2. Titan: requires three player shots to destroy an enemy aircraft
-        if (attackerClass === 'titan') {
-            this.titanHits = (this.titanHits || 0) + 1;
-            if (this.titanHits >= 3) {
-                this.hp = 0;
-                this.active = false;
-                return { destroyed: true, hp: 0 };
-            } else {
-                this.isDamaged = true;
-                this.hp = Math.max(1, 3 - this.titanHits);
-                return { destroyed: false, hp: this.hp };
-            }
-        }
-
-        // 3. Standard classes (Fighter 1, Phantom, Phantom Prototype): exactly 2 hits
+        // Titan and standard classes share normal enemy HP: two valid hits from full health.
         this.hp--;
         if (this.hp === 1) {
             this.isDamaged = true; // First hit: change to damaged state
