@@ -16,6 +16,17 @@ class VocabService {
         return (text || "").toString().trim().toLowerCase();
     }
 
+    getActiveUser(urlParams) {
+        const requestedUser = urlParams.get('user');
+        if (requestedUser !== null) return requestedUser.trim();
+        try {
+            const tabUser = window.sessionStorage.getItem('ls_active_profile');
+            if (tabUser !== null) return tabUser.trim();
+        } catch { /* Fall back when tab storage is unavailable. */ }
+        try { return (window.localStorage.getItem('vocab_user') || '').trim(); }
+        catch { return ''; }
+    }
+
     resetExhaustionDeck(excludeWord = "") {
         const pool = this.vocabularyList.slice();
         // Fisher-Yates shuffle
@@ -33,7 +44,7 @@ class VocabService {
 
     async init() {
         const urlParams = new URLSearchParams(window.location.search);
-        this.activeUser = urlParams.get('user') || localStorage.getItem('vocab_user') || "";
+        this.activeUser = this.getActiveUser(urlParams);
         const modeParam = urlParams.get('mode') || "";
         const topicParam = urlParams.get('topic') || "";
 
@@ -70,7 +81,7 @@ class VocabService {
             text.textContent = `VOCABULARY READY (${this.vocabularyList.length} IELTS WORDS)`;
         }
 
-        // 2. Shared IndexedDB Query (LexicalSpaceDB v1) with safety timeout
+        // 2. Read the existing shared vocabulary with a safety timeout.
         try {
             const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('TIMEOUT'), 1200));
             const idbPromise = this.fetchFromIndexedDB(this.activeUser, modeParam === 'topic' ? topicParam : "");
@@ -127,126 +138,76 @@ class VocabService {
         this.allDistractorPool = Array.from(poolSet);
     }
 
-    fetchFromIndexedDB(username, targetTopic = "") {
-        return new Promise((resolve) => {
+    fetchFromIndexedDB(username = "", targetTopic = "") {
+        return new Promise(resolve => {
             if (!window.indexedDB) return resolve(null);
-            const req = indexedDB.open(this.dbName, 1);
-            req.onerror = () => resolve(null);
-            req.onsuccess = (e) => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains(this.storeName)) {
-                    db.close();
-                    return resolve(null);
-                }
-                const tx = db.transaction(this.storeName, 'readonly');
-                const store = tx.objectStore(this.storeName);
-                const getAllReq = store.getAll();
+            const profile = username.trim();
+            const request = window.indexedDB.open(this.dbName);
+            // If LexicalSpace has never run on this origin, leave database creation to it.
+            request.onupgradeneeded = () => request.transaction.abort();
+            request.onerror = () => resolve(null);
+            request.onsuccess = () => {
+                const db = request.result;
+                const finish = result => { db.close(); resolve(result); };
+                db.onversionchange = () => db.close();
+                if (!db.objectStoreNames.contains(this.storeName)) return finish(null);
 
-                getAllReq.onerror = () => { db.close(); resolve(null); };
-                getAllReq.onsuccess = () => {
-                    const rawRecords = getAllReq.result || [];
-                    db.close();
-
-                    const userNorm = this.normalize(username);
-                    const topicNorm = this.normalize(targetTopic);
-                    const validRecords = [];
-
-                    for (const rec of rawRecords) {
-                        if (!rec || !rec.word) continue;
-                        const recUser = this.normalize(rec.username);
-                        if (userNorm && recUser && recUser !== userNorm) continue;
-                        if (topicNorm) {
-                            const recTopic = this.normalize(rec.topic);
-                            if (recTopic && recTopic !== topicNorm) continue;
-                        }
-
-                        const wordStr = rec.word.trim();
-                        const synSet = new Set();
-                        const wordNorm = this.normalize(wordStr);
-
-                        [rec.synonym1, rec.synonym2].forEach(s => {
-                            if (s && typeof s === 'string') {
-                                const clean = s.trim();
-                                if (clean.length > 0 && this.normalize(clean) !== wordNorm) {
-                                    synSet.add(clean);
-                                }
-                            }
-                        });
-
-                        if (Array.isArray(rec.synonyms)) {
-                            rec.synonyms.forEach(s => {
-                                if (s && typeof s === 'string') {
-                                    const clean = s.trim();
-                                    if (clean.length > 0 && this.normalize(clean) !== wordNorm) {
-                                        synSet.add(clean);
-                                    }
-                                }
-                            });
-                        } else if (typeof rec.synonyms === 'string' && rec.synonyms.trim()) {
-                            rec.synonyms.split(',').forEach(s => {
-                                const clean = s.trim();
-                                if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                            });
-                        }
-
-                        if (synSet.size > 0) {
-                            validRecords.push({
-                                word: wordStr,
-                                synonyms: Array.from(synSet),
-                                meaning: rec.meaning || "",
-                                topic: rec.topic || "General",
-                                memoryStatus: rec.memoryStatus || 'not_remembered',
-                                hasBeenStudied: !!rec.hasBeenStudied
-                            });
-                        }
-                    }
-
-                    // If specific topic had no matches, attempt all topics for user
-                    if (validRecords.length === 0 && topicNorm) {
-                        for (const rec of rawRecords) {
-                            if (!rec || !rec.word) continue;
-                            const recUser = this.normalize(rec.username);
-                            if (userNorm && recUser && recUser !== userNorm) continue;
-
-                            const wordStr = rec.word.trim();
-                            const synSet = new Set();
-                            const wordNorm = this.normalize(wordStr);
-                            [rec.synonym1, rec.synonym2].forEach(s => {
-                                if (s && typeof s === 'string') {
-                                    const clean = s.trim();
-                                    if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                }
-                            });
-                            if (Array.isArray(rec.synonyms)) {
-                                rec.synonyms.forEach(s => {
-                                    if (s && typeof s === 'string') {
-                                        const clean = s.trim();
-                                        if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                    }
-                                });
-                            } else if (typeof rec.synonyms === 'string' && rec.synonyms.trim()) {
-                                rec.synonyms.split(',').forEach(s => {
-                                    const clean = s.trim();
-                                    if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                });
-                            }
-                            if (synSet.size > 0) {
-                                validRecords.push({
-                                    word: wordStr,
-                                    synonyms: Array.from(synSet),
-                                    meaning: rec.meaning || "",
-                                    topic: rec.topic || "General",
-                                    memoryStatus: rec.memoryStatus || 'not_remembered',
-                                    hasBeenStudied: !!rec.hasBeenStudied
-                                });
-                            }
-                        }
-                    }
-
-                    resolve(validRecords.length > 0 ? validRecords : null);
-                };
+                try {
+                    const transaction = db.transaction(this.storeName, 'readonly');
+                    const store = transaction.objectStore(this.storeName);
+                    const scoped = Array.isArray(store.keyPath) && store.keyPath.includes('username');
+                    if (scoped && !profile) return finish(null);
+                    const read = scoped && store.indexNames.contains('username')
+                        ? store.index('username').getAll(profile)
+                        : store.getAll();
+                    transaction.onabort = () => finish(null);
+                    transaction.oncomplete = () => {
+                        finish(this.toPlayableWords(read.result, profile, targetTopic, scoped));
+                    };
+                } catch { finish(null); }
             };
         });
+    }
+
+    toPlayableWords(records, profile, targetTopic, scoped) {
+        const legacyProfile = this.normalize(profile);
+        const topic = this.normalize(targetTopic);
+        const allWords = [];
+        const topicWords = [];
+        for (const record of records) {
+            if (record?.deleted === true || typeof record?.word !== 'string') continue;
+            const owner = typeof record.username === 'string' ? record.username.trim() : '';
+            const belongsToProfile = scoped ? owner === profile
+                : !legacyProfile || !owner || this.normalize(owner) === legacyProfile;
+            if (!belongsToProfile) continue;
+
+            const word = record.word.trim();
+            if (!word) continue;
+            const wordNorm = this.normalize(word);
+            const related = Array.isArray(record.synonyms) ? record.synonyms
+                : typeof record.synonyms === 'string' ? record.synonyms.split(',') : [];
+            const synonyms = new Set();
+            for (const candidate of [record.synonym1, record.synonym2, ...related]) {
+                if (typeof candidate !== 'string') continue;
+                const synonym = candidate.trim();
+                if (synonym && this.normalize(synonym) !== wordNorm) synonyms.add(synonym);
+            }
+            if (!synonyms.size) continue;
+
+            const entry = {
+                word,
+                synonyms: [...synonyms],
+                meaning: record.meaning || "",
+                topic: record.topic || "General",
+                memoryStatus: record.memoryStatus || 'not_remembered',
+                hasBeenStudied: Boolean(record.hasBeenStudied || record.reviewCount > 0)
+            };
+            allWords.push(entry);
+            const topics = [record.topic, ...(Array.isArray(record.topics) ? record.topics : [])];
+            if (topic && topics.some(tag => this.normalize(tag) === topic)) topicWords.push(entry);
+        }
+        const words = topicWords.length ? topicWords : allWords;
+        return words.length ? words : null;
     }
 
     isValidVocabEntry(entry) {
